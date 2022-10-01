@@ -336,9 +336,7 @@ class ChunkyFont {
         }
 		var width=0
 		var y=_y
-        TIC.trace(c)
 		for (row in __LETTERS[c]) {
-            TIC.trace(row)
 			var x=_x+xadj*__WIDTH
 			var rowwidth=0
 			var hasletter=false
@@ -354,7 +352,7 @@ class ChunkyFont {
 				x=x+__WIDTH
             }
 			y=y+__HEIGHT
-			width=max(width,rowwidth)
+			width=width.max(rowwidth)
         }
 		_x=_x+(width+xadj)*__WIDTH
     }
@@ -369,20 +367,38 @@ class ChunkyFont {
 				_y=_y+__HEIGHT*4
             } else if (c=="^") {
 				readcolor=1
-				return resetpalette()
+				resetpalette()
             } else if (readcolor==1) {
-				var color=tonumber(c, 16)
+				var color=tonumberfromhex(c)
 				TIC.poke4(PALETTE_MAP * 2 + __COLOR1, color)
 				readcolor=2
             } else if (readcolor==2) {
-				var color=tonumber(c, 16)
+				var color=tonumberfromhex(c)
 				TIC.poke4(PALETTE_MAP * 2 + __COLOR2, color)
 				readcolor=0
             } else {
-				return ch(c)
+				ch(c)
             }
         }
-		return resetpalette()
+		resetpalette()
+    }
+
+    tonumberfromhex(c) {
+        if (c=="a") { 
+            return 0xa 
+        } else if (c=="b") {
+            return 0xb 
+        } else if (c=="c") { 
+            return 0xc 
+        } else if (c=="d") {
+            return 0xd 
+        } else if (c=="e") { 
+            return 0xe 
+        } else if (c=="f") {
+            return 0xf 
+        } else { 
+            return Num.fromString(c)
+        }
     }
 
 	resetpalette() {
@@ -433,7 +449,7 @@ class SkipState is State {
     }
 
 	finish() {
-		sfx(SFXNEXT)
+		TIC.sfx(SFXNEXT)
     }
 
 	next() {
@@ -452,7 +468,7 @@ class SplashStateText {
     construct new(t, tx) {
         _t=t
         _tx=tx
-    }
+    }                                                              
 }
 
 class SplashState is SkipState {
@@ -461,11 +477,11 @@ class SplashState is SkipState {
 		super(10)
 		_len=250
 		_texts=[
-			SplashStateText.new(0,"^56c^deon"),
-			SplashStateText.new(1,"^56c^deon^56g^deus"),
-			SplashStateText.new(2,"^56c^deon^56g^deus\n^56b^deon"),
-			SplashStateText.new(3,"^56c^deon^56g^deus\n^56b^deon^56g^deus"),
-			SplashStateText.new(4,"^56c^deon^56g^deus\n^56b^deon^56g^deus\n^56g^deames"),
+			SplashStateText.new(0,"^56u^deni"),
+			SplashStateText.new(1,"^56u^deni^56c^deorns"),
+			SplashStateText.new(2,"^56u^deni^56c^deorns\n^56o^def"),
+			SplashStateText.new(3,"^56u^deni^56c^deorns\n^56o^def^56d^deeath"),
+			SplashStateText.new(4,"^56u^deni^56c^deorns\n^56o^def^56d^deeath\n^56g^deames"),
         ]
     }
 
@@ -489,28 +505,26 @@ class SplashState is SkipState {
 			cf.s(tx)
         }
 		if (tt>5.8*MUSBEATTICKS) {
-			drawface(160,70)
+			//drawface(160,70)
         }
     }
 
 	drawface(x,y) {
 		//  head
-        TIC.trace(x)
-        TIC.trace(y)
 		TIC.elli(x,y,35,30,4)
 		TIC.ellib(x,y,35,30,3)
 		// eyes
-		edx=12
+		var edx=12
 		TIC.circ(x-edx,y-5,9,12)
 		TIC.circ(x+edx,y-5,9,12)
 		TIC.circ(x-edx,y-5,7,0)
 		TIC.circ(x+edx,y-5,7,0)
 		// mouth
-		my=y+10
-		mdx=25
-		mdy=15
-		its=16
-		d=Num.pi/its
+		var my=y+10
+		var mdx=25
+		var mdy=15
+		var its=16
+		var d=Num.pi/its
 		for (i in 0..its-1) {
 			// draw fan of tris in semi-circle
 			TIC.tri(x,my,x+d*i.cos*mdx,my+(d*i).sin*mdy,x+(d*(i+1)).cos*mdx,my+(d*(i+1)).sin*mdy,2)
@@ -534,7 +548,7 @@ class TitleState is SkipState {
 
 	reset() {
 		super.reset()
-		music()	// stop music
+		TIC.music()	// stop music
     }
 
 	finish() {
@@ -543,8 +557,8 @@ class TitleState is SkipState {
 
 	draw() {
 		super.draw()
-		cls(COLOR_BG)
-		print("This is the title screen!\nPress any key to go back to the\nsplash screen", 10, 10)
+		TIC.cls(COLOR_BG)
+		TIC.print("This is the title screen!\nPress any key to go back to the\nsplash screen", 10, 10)
     }
 }
 
