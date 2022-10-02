@@ -592,7 +592,6 @@ class MainState is State {
         _speed=5
         _player=Player.new(10,60,_speed)
         _obstacles=[]
-        _mouse=Mouse.new(0,10)
         _map=GameMap.new()
         _currentTime=0
         _correctOnZ=true
@@ -620,14 +619,14 @@ class MainState is State {
         _player.update()
 
         if(tt%60==0) {
-            _obstacles.add(Mouse.new(_x+WIDTH,RANDOM.int(HEIGHT-20)+10))
+            _obstacles.add(Oldie.new(_x+WIDTH,RANDOM.int(HEIGHT-20)+10))
         }
 
         _obstacles=_obstacles.where {|obstacle| obstacle.x>_x-100}.toList
 
         _obstacles.each {|obstacle|
             if(obstacle.intersects(_player)) {
-                _player.onHit(1)
+                _player.onHit(obstacle.damage)
                 _obstacles.remove(obstacle)
             }
         }
@@ -867,8 +866,11 @@ class Player is GameObject {
 }
 
 class Obstacle is GameObject {
-    construct new(x,y,hitbox) {
+    damage { _damage }
+
+    construct new(x,y,damage,hitbox) {
         super(x,y,hitbox)
+        _damage=damage
     }
 
     draw() {
@@ -876,9 +878,9 @@ class Obstacle is GameObject {
     }
 }
 
-class Mouse is Obstacle {
+class Oldie is Obstacle {
     construct new(x,y) {
-        super(x,y,Rect.new(5,7,6,6))
+        super(x,y,1,Rect.new(4,3,7,10))
     }
 
     draw(camX,camY) {
@@ -1008,16 +1010,16 @@ class Game is TIC{
 // 001:0000000000000000000000009999999999999999ff999999ffccccccffcccccc
 // 002:00000000000000009000000099999999999999999ff99999cfffcccccffffccc
 // 003:000000000000000000000000999000009994000099944000ccccc000ccccc000
-// 004:00000000000000000000000000000000000000000000c00000000ccc00000ccc
-// 005:0000000000000000000000000000000000000000c00000000000000000000000
+// 004:000000000000000000000000000000dd000000dd000001d3000011d100001111
+// 005:000000000000000000000000dd0000003d0000003d1000001d10000011100000
 // 006:0000000000000000000000000000000000000000020202c20cc22c2202cccccc
 // 007:000000000000000000000000000000000000000022000000c200000020000000
 // 016:0000999f0000cccf0000cccf0000999f00002999000009990000000000000000
 // 017:ff999999ffccccccffccccccff99999999999999999999990000000000000000
 // 018:9ffff999cffffccccfffcccc9ff9999999999999999999999000000000000000
 // 019:99999000ccccc000ccccc0009994400099940000999000000000000000000000
-// 020:000000cc00000ccc00000ccc00000ccc000000cc000000000000000000000000
-// 021:c0000000cc000000cc000000cc00c000c0ccc000000000000000000000000000
+// 020:0000111300001111000011110000108800000ff0000000000000000000000000
+// 021:13100000121000001210000012000000f2000000000000000000000000000000
 // 022:02cccccc0c22c2220002c2000000000000000000000000000000000000000000
 // 023:22000000c20000002c00000000c0000000000000000000000000000000000000
 // 032:0000000000000000000000000000000500000055000000550000005570000005
