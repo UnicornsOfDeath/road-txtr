@@ -27,6 +27,7 @@ var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y-10
 var EVENT_TICK=200
+var WIN_X=2000
 var RANDOM=Random.new()
 
 // BUTTONS
@@ -475,8 +476,10 @@ class SkipState is State {
 		TIC.sfx(SFXNEXT)
     }
 
+    canSkip {tt>_grace}
+
 	next() {
-		if (tt>_grace && (TIC.btnp(0) || TIC.btnp(1) || TIC.btnp(2) || TIC.btnp(3) || TIC.btnp(4) || TIC.btnp(5))) {
+		if (canSkip && (TIC.btnp(0) || TIC.btnp(1) || TIC.btnp(2) || TIC.btnp(3) || TIC.btnp(4) || TIC.btnp(5))) {
 			finish()
 			nextstate.reset()
 			return nextstate
@@ -600,6 +603,12 @@ class MainState is State {
         var message1 = Message.new("Martinez", "Hello! Is your\nrefrigerator\nrunning?","Yes","Too poor to own a fridge")
         var message2 = Message.new("Ezekial", "Hey!\nWhats your name?","Tony","Fuck you Tony")
         _messages = [message1, message2]
+        _progressbar = ProgressBar.new()
+		_winstate=this
+    }
+    winstate { _winstate }
+    winstate=(value) {
+        _winstate=value
     }
 
     reset() {
@@ -673,10 +682,17 @@ class MainState is State {
         if(TIC.btnp(BTN_X)){
             _player.onHit(9999)
         }
+
+        _progressbar.update()
     }
 
     next() {
         _map.update(_x)
+        if (_x>=WIN_X) {
+            finish()
+            winstate.reset()
+            return winstate
+        }
         // TODO: stay on this state a bit and show the car exploding etc
 		if (_player.health==0) {
 			finish()
@@ -693,8 +709,9 @@ class MainState is State {
         if(mapX>WIDTH){
             TIC.map(0, 0, MAP_W, MAP_H, -mapX+WIDTH*2, 0)
         }
-        _player.draw(_x,_y)
         _obstacles.each {|obstacle| obstacle.draw(_x,_y) }
+        _player.draw(_x,_y)
+        _progressbar.draw(_x)
 
         if (_showText){
             var y=TXT_Y
@@ -756,6 +773,35 @@ class DeathState is SkipState {
 		TIC.cls(COLOR_BG)
 		TIC.print("Totalled!", 40, 50)
 		TIC.print("Press any key to restart", 10, 10)
+    }
+}
+
+class WinState is SkipState {
+	construct new() {
+		super(300)
+    }
+
+	reset() {
+		super.reset()
+        // TODO: win music
+		TIC.music(MUSTITLE,-1,-1,false)
+    }
+
+	finish() {
+        return
+    }
+
+	draw() {
+		super.draw()
+		TIC.cls(COLOR_BG)
+		TIC.print("You win!", 40, 30, 5)
+		TIC.print("Time: ???", 30, 60, 12)
+		TIC.print("Good texts: ???", 30, 70, 12)
+		TIC.print("Bad texts: ???", 30, 80, 12)
+		TIC.print("Pedestrians killed: ???", 30, 90, 12)
+        if (canSkip){
+            TIC.print("Press any key to reset", 10, HEIGHT-10, 12)
+        }
     }
 }
 
@@ -931,6 +977,20 @@ class GameMap {
     }
 }
 
+class ProgressBar {
+	construct new() {
+    }
+    update() {
+    }
+
+    draw(x) {
+        var progress=x*WIDTH/WIN_X
+        TIC.rect(0,0,progress,5,6)
+        TIC.rect(progress,0,WIDTH-progress,5,14)
+        TIC.spr(511,progress-4,(x/30).floor%2-2,0)
+    }
+}
+
 class Game is TIC{
 
 	construct new(){
@@ -938,10 +998,13 @@ class Game is TIC{
         var titleState = TitleState.new()
         var mainState = MainState.new()
         var deathState = DeathState.new()
+        var winState = WinState.new()
         splashState.nextstate = titleState
         titleState.nextstate = mainState
         mainState.nextstate = deathState
+        mainState.winstate = winState
         deathState.nextstate = titleState
+        winState.nextstate = splashState
         _state=splashState
         _state.reset()
 	}
@@ -1052,6 +1115,7 @@ class Game is TIC{
 // 117:1111111122212222991299aa99129aaaff122222ddf22222fedf2222deffffff
 // 118:ffffff9f222222ffa99992ff99991120222211ff22222fed2222fdcfffffffdd
 // 119:222221f0222221242222212f1111112fff22212fddf2fff4fedf2224defffff0
+// 255:0000000000000000122221002aa2aa00222222241cd22cd10de11de000000000
 // </SPRITES>
 
 // <MAP>
