@@ -653,12 +653,17 @@ class MainState is State {
 
         _obstacles.each {|obstacle|
             obstacle.update()
-            if(obstacle.intersects(_player)) {
+            if(obstacle.isAlive&&obstacle.intersects(_player)) {
                 _player.onHit(obstacle.damage)
+                obstacle.onHit()
+            }
+        }
+        // Remove obstacles off camera
+        _obstacles.each {|obstacle|
+            if(obstacle.x<_x){
                 _obstacles.remove(obstacle)
             }
         }
-
 
         if (_showText == true) {
             if(TIC.btnp(BTN_A)){
@@ -934,6 +939,12 @@ class Obstacle is GameObject {
     construct new(x,y,damage,hitbox) {
         super(x,y,hitbox)
         _damage=damage
+        _isAlive=true
+    }
+
+    isAlive{_isAlive}
+    onHit(){
+        _isAlive=false
     }
 
     draw() {
@@ -945,16 +956,35 @@ class Oldie is Obstacle {
     construct new(x,y) {
         super(x,y,1,Rect.new(4,3,7,10))
         _ticks=0
+        _dy=0
+        _dx=0
     }
 
     update(){
         super()
         _ticks=_ticks+1
+        if(!isAlive){
+            _dy=_dy+0.15
+        }
+        y=y+_dy
+        x=x+_dx
+    }
+
+    onHit(){
+        super()
+        _dy=-3
+        _dx=1
     }
 
     draw(camX,camY) {
-        var frame=(_ticks/30).floor%2
-        TIC.spr(260+frame,x-camX,y-camY,0,1,0,0,1,2)
+        if(isAlive){
+            var frame=(_ticks/30).floor%2
+            TIC.spr(260+frame,x-camX,y-camY,0,1,0,0,1,2)
+        }else{
+            var frame=(_ticks/5).floor%2
+            var r=((_ticks/10).floor%4)*90
+            TIC.spr(260+frame,x-camX,y-camY,0,1,0,r,1,2)
+        }
     }
 }
 
