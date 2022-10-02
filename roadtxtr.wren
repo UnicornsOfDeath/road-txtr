@@ -586,11 +586,12 @@ class TitleState is SkipState {
 
 class MainState is State {
     construct new() {
+        _random=Random.new()
         _x=0
         _y=0
         _speed=5
         _player=Player.new(10,60,_speed)
-        _mouse=Mouse.new(0,10)
+        _obstacles=[]
         _currentTime=0
         var message1 = Message.new("Martinez", "Hello! Is your\nrefrigerator\nrunning?","Yes","Too poor to own a fridge")
         var message2 = Message.new("Ezekial", "Hey!\nWhats your name?","Tony","Fuck you Tony")
@@ -607,12 +608,26 @@ class MainState is State {
     }
 
     update() {
+        super.update()
+
         _x=_x+_speed
         if(_x>WIDTH*8) {
             // Warp player back to the left of the map
             _x=_x-WIDTH*8
         }
         _player.update()
+
+        if(tt%60==0) {
+            _obstacles.add(Mouse.new(_x+WIDTH,_random.int(HEIGHT-20)+10))
+        }
+
+        _obstacles=_obstacles.where {|obstacle| obstacle.x>_x-100}.toList
+
+        _obstacles.each {|obstacle|
+            if(obstacle.intersects(_player)) {
+                _player.onHit(1)
+            }
+        }
 
         // Show/hide text with A button
         if(TIC.btnp(BTN_A)){
@@ -646,7 +661,7 @@ class MainState is State {
     draw() {
         TIC.map(_x/8, 0, MAP_W+1, MAP_H+1, -(_x%8), 0)
         _player.draw(_x,_y)
-        _mouse.draw(_x,_y)
+        _obstacles.each {|obstacle| obstacle.draw(_x,_y) }
 
         if (_showText){
             var y=TXT_Y
@@ -658,10 +673,6 @@ class MainState is State {
             TIC.print(_messages[_rand].message,TXT_X+5,y+4,0)
         }
 
-
-        if(_player.intersects(_mouse)) {
-            TIC.print("SPLAT!!!",0,0,0)
-        }
         TIC.print("Z to show/hide txt",2,HEIGHT-8,0)
         TIC.print("X to suicide",140,HEIGHT-8,0)
     }
