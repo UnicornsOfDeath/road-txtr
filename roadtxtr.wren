@@ -583,6 +583,14 @@ class Game is TIC{
 }
 
 // <TILES>
+// 000:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+// 001:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+// 016:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+// 017:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+// 032:eeeecccceeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+// 033:ccceeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+// 048:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+// 049:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 // 128:9acaaaa99aaaaaaa09aaaaac009aaaaa009aaaaa09aaaaaa9accaaaa9acaaaa9
 // 129:9acaaaa9aaaaaaa9caaaaa90aaaaa900aaaaa900aaaaaa90aaaaaca99aaaaaa9
 // 130:0099990009aaaa909accaaa99acaaaa99aaaaaa99aaaaaa99aaaaaa99acaaaa9
@@ -607,6 +615,17 @@ class Game is TIC{
 // 166:9acaaaa99acaaaaa9acaaaac9acaaaaa9aaaaaaa9aaaaaaa9aaaaaaa99999999
 // 167:9acaaaa9aaaaaaa9cacaaaa9aaaaaaa9aaaaaaa9aaaaaaa9aaaaaaa999999999
 // </TILES>
+
+// <SPRITES>
+// 000:000000000000000000000000000009990000499900044999000ccccc000ccccc
+// 001:000000000000000000000009999999999999999999999ff9ccccfffccccffffc
+// 002:0000000000000000000000009999999999999999999999ffccccccffccccccff
+// 003:0000000000000000000000009990000099920000f9990000fccc0000fccc0000
+// 016:00099999000ccccc000ccccc0004499900004999000009990000000000000000
+// 017:999ffff9cccffffcccccfffc99999ff999999999999999990000000900000000
+// 018:999999ffccccccffccccccff999999ff99999999999999990000000000000000
+// 019:f9990000fccc0000fccc0000f999000099920000999000000000000000000000
+// </SPRITES>
 
 // <WAVES>
 // 000:01358acefeca853101368acefeca8531
