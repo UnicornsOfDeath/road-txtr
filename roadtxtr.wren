@@ -17,6 +17,13 @@ var MUSBEATTICKS=FPS*60/MUSTEMPO*MUSSPD/6
 var PALETTE_MAP=0x3FF0
 var SFXNEXT=1
 
+// BUTTONS
+
+var BTN_UP=0
+var BTN_DOWN=1
+var BTN_LEFT=2
+var BTN_RIGHT=3
+
 class ChunkyFont {
 
     static init_() {
@@ -562,13 +569,65 @@ class TitleState is SkipState {
     }
 }
 
+class MainState is State {
+    construct new() {
+        _x=0
+        _speed=1.5
+        _player=Player.new(10,60)
+    }
+
+    update() {
+        _x=_x-_speed
+        _player.update()
+    }
+
+    draw() {
+        TIC.map(0, 0, WIDTH, HEIGHT, _x, 0)
+        _player.draw()
+    }
+}
+
+class GameObject {
+    x { _x }
+    y { _y }
+    x=(value){ _x=value }
+    y=(value){ _y=value }
+
+    construct new(x,y) {
+        _x=x
+        _y=y
+    }
+
+    draw() {}
+}
+
+class Player is GameObject {
+    construct new(x,y) {
+        super(x,y)
+        _steeringSpeed=1
+    }
+
+    update() {
+        if(TIC.btn(BTN_UP)) {
+            y=y-_steeringSpeed
+        }
+        if(TIC.btn(BTN_DOWN)) {
+            y=y+_steeringSpeed
+        }
+    }
+
+    draw() {
+        TIC.spr(256,x,y,0,1,0,0,4,2)
+    }
+}
+
 class Game is TIC{
 
 	construct new(){
         var splashState = SplashState.new()
         var titleState = TitleState.new()
         splashState.nextstate = titleState
-        titleState.nextstate = splashState
+        titleState.nextstate = MainState.new()
         _state=splashState
         _state.reset()
 	}
