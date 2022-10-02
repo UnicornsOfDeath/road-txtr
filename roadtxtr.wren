@@ -593,6 +593,7 @@ class MainState is State {
         _x=0
         _player=Player.new(10,60)
         _showText=false
+        _currentTime=0
 		TIC.music(MUSGAME,-1,-1,true)
     }
 
