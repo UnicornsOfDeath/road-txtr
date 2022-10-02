@@ -656,8 +656,8 @@ class MainState is State {
 
         _currentTime = _currentTime + 1
         if(_currentTime == EVENT_TICK) {
-           _rand = Random.new().int(_messages.count)
-           _randOrder = Random.new().int(2)
+           _rand = _random.int(_messages.count)
+           _randOrder = _random.int(2)
            if (_randOrder == 0 ) {
             _correctOnZ = true
            } else {
