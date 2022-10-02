@@ -643,7 +643,7 @@ class MainState is State {
         var mapX = _x%(WIDTH*2)
         TIC.map(0, 0, MAP_W*2, MAP_H, -mapX, 0)
         if(mapX>WIDTH){
-            TIC.map(0, 0, MAP_W+1, MAP_H+1, -mapX+WIDTH*2, 0)
+            TIC.map(0, 0, MAP_W, MAP_H, -mapX+WIDTH*2, 0)
         }
         _player.draw(_x,_y)
         _mouse.draw(_x,_y)
