@@ -622,6 +622,7 @@ class MainState is State {
         _obstacles.each {|obstacle|
             if(obstacle.intersects(_player)) {
                 _player.onHit(1)
+                _obstacles.remove(obstacle)
             }
         }
 
