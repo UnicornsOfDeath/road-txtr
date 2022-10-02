@@ -6,6 +6,8 @@
 // version: 0.1
 // script:  wren
 
+import "random" for Random
+
 var WIDTH=240
 var HEIGHT=136
 var MAP_W=30
@@ -588,6 +590,9 @@ class MainState is State {
         _speed=5
         _player=Player.new(10,60)
         _currentTime=0
+        var message1 = Message.new("Martinez", "Hello! Is your\nrefrigerator\nrunning?","Yes","Too poor to own a fridge")
+        var message2 = Message.new("Ezekial", "Hey!\nWhats your name?","Tony","Fuck you Tony")
+        _messages = [message1, message2]
     }
 
     reset() {
@@ -613,9 +618,9 @@ class MainState is State {
             TIC.sfx(SFXNEXT)
         }
 
-
         _currentTime = _currentTime + 1
         if(_currentTime == EVENT_TICK) {
+           _rand = Random.new().int(_messages.count)
            _showText=!_showText
            _currentTime = 0
         }
@@ -644,10 +649,10 @@ class MainState is State {
             var y=TXT_Y
             TIC.rect(TXT_X,y,TXT_W,TXT_H,12)
             TIC.rect(TXT_X,y,TXT_W,20,13)
-            TIC.print("Unknown",TXT_X+4,y+4,0)
+            TIC.print(_messages[_rand].sender,TXT_X+4,y+4,0)
             y=y+20
             TIC.rect(TXT_X+3,y+2,TXT_W-35,25,13)
-            TIC.print("Hello! Is your\nrefrigerator\nrunning?",TXT_X+5,y+4,0)
+            TIC.print(_messages[_rand].message,TXT_X+5,y+4,0)
         }
 
         TIC.print("_x: %(_x)", 2, HEIGHT-16, 0)
@@ -680,7 +685,17 @@ class DeathState is SkipState {
 }
 
 class Message {
+    sender { _sender }
+    message { _message }
+    correct { _correct}
+    wrong { _wrong }
 
+    construct new (sender, message, correct, wrong) {
+        _sender = sender
+        _message = message
+        _correct = correct
+        _wrong = wrong
+    }
 }
 
 class GameObject {
