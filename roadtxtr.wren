@@ -22,6 +22,7 @@ var TXT_X=120
 var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y-10
+var EVENT_TICK=200
 
 // BUTTONS
 
@@ -584,6 +585,7 @@ class MainState is State {
         _x=0
         _speed=1.5
         _player=Player.new(10,60)
+        _currentTime=0
     }
 
     reset() {
@@ -603,6 +605,13 @@ class MainState is State {
             _showText=!_showText
             TIC.sfx(SFXNEXT)
         }
+
+
+        _currentTime = _currentTime + 1
+        if(_currentTime == EVENT_TICK) {
+           _showText=!_showText
+           _currentTime = 0
+        }
     }
 
     draw() {
@@ -621,6 +630,10 @@ class MainState is State {
 
         TIC.print("Z to show/hide txt",2,HEIGHT-8,0)
     }
+}
+
+class Message {
+    
 }
 
 class GameObject {
