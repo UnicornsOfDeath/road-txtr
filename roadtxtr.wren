@@ -593,6 +593,9 @@ class MainState is State {
         _player=Player.new(10,60,_speed)
         _obstacles=[]
         _currentTime=0
+        _correctOnZ=true
+        _correctChoice=false
+        _choiceMade=false
         var message1 = Message.new("Martinez", "Hello! Is your\nrefrigerator\nrunning?","Yes","Too poor to own a fridge")
         var message2 = Message.new("Ezekial", "Hey!\nWhats your name?","Tony","Fuck you Tony")
         _messages = [message1, message2]
@@ -604,6 +607,7 @@ class MainState is State {
         _player=Player.new(10,60,_speed)
         _showText=false
         _currentTime=0
+        _choiceMade=false
 		TIC.music(MUSGAME,-1,-1,true)
     }
 
@@ -626,21 +630,46 @@ class MainState is State {
             }
         }
 
-        // Show/hide text with A button
-        if(TIC.btnp(BTN_A)){
-            _showText=!_showText
-            TIC.sfx(SFXNEXT)
+
+        if (_showText == true) {
+            if(TIC.btnp(BTN_A)){
+                if (_correctOnZ == true ){
+                    _correctChoice=true
+                } else {
+                    _correctChoice=false
+                }
+                _choiceMade=true
+                _showText=!_showText
+                TIC.sfx(SFXNEXT)
+            }
+            if(TIC.btnp(BTN_B)){
+                if (_correctOnZ == false ){
+                    _correctChoice=true
+                } else {
+                    _correctChoice=false
+                }
+                _choiceMade=true
+                _showText=!_showText
+                TIC.sfx(SFXNEXT)
+            }
         }
 
         _currentTime = _currentTime + 1
         if(_currentTime == EVENT_TICK) {
            _rand = Random.new().int(_messages.count)
-           _showText=!_showText
+           _randOrder = Random.new().int(2)
+           if (_randOrder == 0 ) {
+            _correctOnZ = true
+           } else {
+            _correctOnZ = false
+           }
+           _showText=true
+           _choiceMade=false
            _currentTime = 0
         }
 
         // Skip to death screen with B button
-        if(TIC.btnp(BTN_B)){
+        if(TIC.btnp(BTN_X)){
             _player.onHit(9999)
         }
     }
@@ -672,10 +701,35 @@ class MainState is State {
             y=y+20
             TIC.rect(TXT_X+3,y+2,TXT_W-35,25,13)
             TIC.print(_messages[_rand].message,TXT_X+5,y+4,0)
+
+
+            y=y+40
+            TIC.rectb(TXT_X+3,y+2,10,10,13)
+            TIC.print("Z",TXT_X+5,y+4,5)
+            if (_correctOnZ == true) {
+                TIC.print(_messages[_rand].correct,TXT_X+15,y+4,0)
+            } else {
+                TIC.print(_messages[_rand].wrong,TXT_X+15,y+4,0)
+            }
+            y=y+15
+            TIC.rectb(TXT_X+3,y+2,10,10,13)
+            TIC.print("X",TXT_X+5,y+4,2)
+            if (_correctOnZ == true) {
+                TIC.print(_messages[_rand].wrong,TXT_X+15,y+4,0)
+            } else {
+                TIC.print(_messages[_rand].correct,TXT_X+15,y+4,0)
+            }
         }
 
-        TIC.print("Z to show/hide txt",2,HEIGHT-8,0)
-        TIC.print("X to suicide",140,HEIGHT-8,0)
+        TIC.print("A to suicide",140,HEIGHT-8,0)
+        TIC.print("_x: %(_x)", 2, HEIGHT-16, 0)
+        if (_choiceMade == true) {
+            if (_correctChoice == true) {
+                TIC.print("Correct Choice",2, HEIGHT-32, 0)
+            } else {
+                TIC.print("Wrong Choice",2, HEIGHT-32, 0)
+            }
+        }
     }
 }
 
