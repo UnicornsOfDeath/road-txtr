@@ -612,6 +612,21 @@ class MainState is State {
            _showText=!_showText
            _currentTime = 0
         }
+
+        // Skip to death screen with B button
+        if(TIC.btnp(BTN_B)){
+            _player.onHit(9999)
+        }
+    }
+
+    next() {
+        // TODO: stay on this state a bit and show the car exploding etc
+		if (_player.health==0) {
+			finish()
+			nextstate.reset()
+			return nextstate
+        }
+		return super()
     }
 
     draw() {
@@ -629,11 +644,35 @@ class MainState is State {
         }
 
         TIC.print("Z to show/hide txt",2,HEIGHT-8,0)
+        TIC.print("X to suicide",140,HEIGHT-8,0)
+    }
+}
+
+class DeathState is SkipState {
+	construct new() {
+		super(10)
+    }
+
+	reset() {
+		super.reset()
+        // TODO: death music
+		TIC.music(MUSTITLE,-1,-1,false)
+    }
+
+	finish() {
+        return
+    }
+
+	draw() {
+		super.draw()
+		TIC.cls(COLOR_BG)
+		TIC.print("Totalled!", 40, 50)
+		TIC.print("Press any key to restart", 10, 10)
     }
 }
 
 class Message {
-    
+
 }
 
 class GameObject {
@@ -651,9 +690,21 @@ class GameObject {
 }
 
 class Player is GameObject {
+    health { _health }
+
     construct new(x,y) {
         super(x,y)
         _steeringSpeed=1
+        _health=10
+    }
+
+    onHit(dmg){
+        // TODO: hit effects
+		TIC.sfx(SFXNEXT)
+        _health=_health-dmg
+        if(_health<0){
+            _health=0
+        }
     }
 
     update() {
@@ -675,8 +726,12 @@ class Game is TIC{
 	construct new(){
         var splashState = SplashState.new()
         var titleState = TitleState.new()
+        var mainState = MainState.new()
+        var deathState = DeathState.new()
         splashState.nextstate = titleState
-        titleState.nextstate = MainState.new()
+        titleState.nextstate = mainState
+        mainState.nextstate = deathState
+        deathState.nextstate = titleState
         _state=splashState
         _state.reset()
 	}
