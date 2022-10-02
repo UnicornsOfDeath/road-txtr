@@ -18,6 +18,10 @@ var FPS=60
 var MUSBEATTICKS=FPS*60/MUSTEMPO*MUSSPD/6
 var PALETTE_MAP=0x3FF0
 var SFXNEXT=1
+var TXT_X=120
+var TXT_Y=10
+var TXT_W=WIDTH-TXT_X-10
+var TXT_H=HEIGHT-TXT_Y-10
 
 // BUTTONS
 
@@ -25,6 +29,10 @@ var BTN_UP=0
 var BTN_DOWN=1
 var BTN_LEFT=2
 var BTN_RIGHT=3
+var BTN_A=4
+var BTN_B=5
+var BTN_X=6
+var BTN_Y=7
 
 class ChunkyFont {
 
@@ -582,17 +590,36 @@ class MainState is State {
         super.reset()
         _x=0
         _player=Player.new(10,60)
+        _showText=false
 		TIC.music(MUSGAME,-1,-1,true)
     }
 
     update() {
         _x=_x-_speed
         _player.update()
+
+        // Show/hide text with A button
+        if(TIC.btnp(BTN_A)){
+            _showText=!_showText
+            TIC.sfx(SFXNEXT)
+        }
     }
 
     draw() {
         TIC.map(0, 0, WIDTH, HEIGHT, _x, 0)
         _player.draw()
+
+        if (_showText){
+            var y=TXT_Y
+            TIC.rect(TXT_X,y,TXT_W,TXT_H,12)
+            TIC.rect(TXT_X,y,TXT_W,20,13)
+            TIC.print("Unknown",TXT_X+4,y+4,0)
+            y=y+20
+            TIC.rect(TXT_X+3,y+2,TXT_W-35,25,13)
+            TIC.print("Hello! Is your\nrefrigerator\nrunning?",TXT_X+5,y+4,0)
+        }
+
+        TIC.print("Z to show/hide txt",2,HEIGHT-8,0)
     }
 }
 
@@ -775,6 +802,6 @@ class Game is TIC{
 // </TRACKS>
 
 // <PALETTE>
-// 000:1a1c2c964b00b13e53ef7d57ffcd75a7f07038b76425717929366f3b5dc941a6f673eff7f4f4f494b0c2566c86333c57
+// 000:1a1c2c5d275db13e53ef7d57ffcd75a7f07038b76425717929366f3b5dc941a6f673eff7f4f4f494b0c2566c86333c57
 // </PALETTE>
 
