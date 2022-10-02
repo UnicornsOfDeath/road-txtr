@@ -1000,9 +1000,10 @@ class ProgressBar {
 
     draw(x) {
         var progress=x*WIDTH/WIN_X
-        TIC.rect(0,0,progress,5,6)
-        TIC.rect(progress,0,WIDTH-progress,5,14)
-        TIC.spr(511,progress-4,(x/30).floor%2-2,0)
+        TIC.rect(0,0,progress,7,11)
+        TIC.rect(progress,0,WIDTH-progress,7,14)
+        TIC.spr(511,progress-4,(x/30).floor%2-1,0)
+        TIC.print("%((progress*100/WIDTH).floor)\%",progress-16,1,0,true,1,true)
     }
 }
 
