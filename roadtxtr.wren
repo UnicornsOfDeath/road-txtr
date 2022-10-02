@@ -41,6 +41,12 @@ var BTN_B=5
 var BTN_X=6
 var BTN_Y=7
 
+// TILE IDs
+var TILE_SIZE=16
+
+var ROAD_TILES=[0,1,2,3,32,33]
+var GRASS_TILES=[64]
+
 class ChunkyFont {
 
     static init_() {
@@ -615,6 +621,7 @@ class MainState is State {
         super.reset()
         _x=0
         _player=Player.new(10,60,_speed)
+        _obstacles=[]
         _showText=false
         _currentTime=0
         _choiceMade=false
@@ -628,7 +635,18 @@ class MainState is State {
         _player.update()
 
         if(tt%60==0) {
-            _obstacles.add(Oldie.new(_x+WIDTH,RANDOM.int(HEIGHT-20)+10))
+            var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,ROAD_TILES)
+            _obstacles.add(Oldie.new(coords[0],coords[1]))
+            TIC.trace(coords[0])
+        }
+
+        if(tt%10==0) {
+            var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,GRASS_TILES)
+            if(RANDOM.int(0,2)==0) {
+                _obstacles.add(PalmTree.new(coords[0],coords[1]-TILE_SIZE))
+            } else {
+                _obstacles.add(PineTree.new(coords[0],coords[1]-TILE_SIZE))
+            }
         }
 
         _obstacles=_obstacles.where {|obstacle| obstacle.x>_x-100}.toList
@@ -705,10 +723,10 @@ class MainState is State {
     draw() {
         _map.draw()
         var mapX = _x%(WIDTH*2)
-        TIC.map(0, 0, MAP_W*2, MAP_H, -mapX, 0)
-        if(mapX>WIDTH){
-            TIC.map(0, 0, MAP_W, MAP_H, -mapX+WIDTH*2, 0)
-        }
+        // TIC.map(0, 0, MAP_W*2, MAP_H, -mapX, 0)
+        // if(mapX>WIDTH){
+        //     TIC.map(0, 0, MAP_W, MAP_H, -mapX+WIDTH*2, 0)
+        // }
         _obstacles.each {|obstacle| obstacle.draw(_x,_y) }
         _player.draw(_x,_y)
         _progressbar.draw(_x)
@@ -934,6 +952,26 @@ class Oldie is Obstacle {
     }
 }
 
+class PalmTree is Obstacle {
+    construct new(x,y) {
+        super(x,y,1,Rect.new(5,20,3,9))
+    }
+
+    draw(camX,camY) {
+        TIC.spr(288,x-camX,y-camY,0,1,0,0,2,4)
+    }
+}
+
+class PineTree is Obstacle {
+    construct new(x,y) {
+        super(x,y,1,Rect.new(7,23,3,7))
+    }
+
+    draw(camX,camY) {
+        TIC.spr(290,x-camX,y-camY,0,1,0,0,2,4)
+    }
+}
+
 class GameMap {
     construct new() {
         _x=0
@@ -974,6 +1012,17 @@ class GameMap {
         if(_x>=WIDTH){
             TIC.map(0, 0, MAP_W, MAP_H, -_x+WIDTH*2, 0)
         }
+    }
+
+    tileAt(x,y) {
+        return TIC.mget((x*2)%(MAP_W*2),y*2+1)
+    }
+
+    findYforRandomTileWithIdsAtX(x,tileIDs) {
+        var tileX=(x/TILE_SIZE).floor+1
+        var tileOptions = (0...(HEIGHT/TILE_SIZE).floor).where {|i| tileIDs.contains(tileAt(tileX,i))}.toList
+        var randomTileY = tileOptions[RANDOM.int(0,tileOptions.count)]
+        return [tileX*TILE_SIZE,randomTileY*TILE_SIZE+8]
     }
 }
 
