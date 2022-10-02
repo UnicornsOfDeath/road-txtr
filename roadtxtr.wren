@@ -585,15 +585,17 @@ class TitleState is SkipState {
 class MainState is State {
     construct new() {
         _x=0
+        _y=0
         _speed=5
-        _player=Player.new(10,60)
+        _player=Player.new(10,60,_speed)
+        _mouse=Mouse.new(0,10)
         _currentTime=0
     }
 
     reset() {
         super.reset()
         _x=0
-        _player=Player.new(10,60)
+        _player=Player.new(10,60,_speed)
         _showText=false
         _currentTime=0
 		TIC.music(MUSGAME,-1,-1,true)
@@ -638,7 +640,8 @@ class MainState is State {
 
     draw() {
         TIC.map(_x/8, 0, MAP_W+1, MAP_H+1, -(_x%8), 0)
-        _player.draw()
+        _player.draw(_x,_y)
+        _mouse.draw(_x,_y)
 
         if (_showText){
             var y=TXT_Y
@@ -650,7 +653,10 @@ class MainState is State {
             TIC.print("Hello! Is your\nrefrigerator\nrunning?",TXT_X+5,y+4,0)
         }
 
-        TIC.print("_x: %(_x)", 2, HEIGHT-16, 0)
+
+        if(_player.intersects(_mouse)) {
+            TIC.print("SPLAT!!!",0,0,0)
+        }
         TIC.print("Z to show/hide txt",2,HEIGHT-8,0)
         TIC.print("X to suicide",140,HEIGHT-8,0)
     }
@@ -683,9 +689,36 @@ class Message {
 
 }
 
+class Rect {
+    x { _x }
+    y { _y }
+    width { _width }
+    height { _height }
+    left { _x }
+    right { _x + width }
+    top { _y }
+    bottom { _y + height }
+
+    construct new(x,y,width,height) {
+        _x=x
+        _y=y
+        _width=width
+        _height=height
+    }
+
+    intersects(other) {
+        return !(right < other.left || left > other.right || top > other.bottom || bottom < other.top)
+    }
+
+    translate(x,y) {
+        return Rect.new(_x+x,_y+y,_width,_height)
+    }
+}
+
 class GameObject {
     x { _x }
     y { _y }
+    hitbox { _hitbox }
     x=(value){ _x=value }
     y=(value){ _y=value }
 
@@ -694,14 +727,25 @@ class GameObject {
         _y=y
     }
 
+    construct new(x,y,hitbox) {
+        _x=x
+        _y=y
+        _hitbox=hitbox
+    }
+
     draw() {}
+
+    intersects(other) {
+        return _hitbox.translate(x,y).intersects(other.hitbox.translate(other.x,other.y))
+    }
 }
 
 class Player is GameObject {
     health { _health }
 
-    construct new(x,y) {
-        super(x,y)
+    construct new(x,y,speed) {
+        super(x,y,Rect.new(0,5,32,11))
+        _speed=speed
         _ticks=0
         _frame=0
         _steeringSpeed=1
@@ -718,6 +762,7 @@ class Player is GameObject {
     }
 
     update() {
+        x=x+_speed
         if(TIC.btn(BTN_UP)) {
             y=y-_steeringSpeed
         }
@@ -731,8 +776,28 @@ class Player is GameObject {
         }
     }
 
+    draw(camX,camY) {
+        TIC.spr(352+_frame*4,x-camX,y-camY,0,1,0,0,4,2)
+    }
+}
+
+class Obstacle is GameObject {
+    construct new(x,y,hitbox) {
+        super(x,y,hitbox)
+    }
+
     draw() {
-        TIC.spr(352+_frame*4,x,y,0,1,0,0,4,2)
+        TIC.spr(256,x,y,0,1,0,0,4,2)
+    }
+}
+
+class Mouse is Obstacle {
+    construct new(x,y) {
+        super(x,y,Rect.new(5,7,6,6))
+    }
+
+    draw(camX,camY) {
+        TIC.spr(260,x-camX,y-camY,0,1,0,0,2,2)
     }
 }
 
