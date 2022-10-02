@@ -10,6 +10,8 @@ var WIDTH=240
 var HEIGHT=136
 var COLOR_BG=0
 var MUSSPLASH=0
+var MUSGAME=1
+var MUSTITLE=2
 var MUSTEMPO=100
 var MUSSPD=3
 var FPS=60
@@ -555,7 +557,7 @@ class TitleState is SkipState {
 
 	reset() {
 		super.reset()
-		TIC.music()	// stop music
+		TIC.music(MUSTITLE,-1,-1,false)
     }
 
 	finish() {
@@ -574,6 +576,13 @@ class MainState is State {
         _x=0
         _speed=1.5
         _player=Player.new(10,60)
+    }
+
+    reset() {
+        super.reset()
+        _x=0
+        _player=Player.new(10,60)
+		TIC.music(MUSGAME,-1,-1,true)
     }
 
     update() {
