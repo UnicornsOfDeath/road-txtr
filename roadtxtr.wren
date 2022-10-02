@@ -608,10 +608,6 @@ class MainState is State {
 
     update() {
         _x=_x+_speed
-        if(_x>WIDTH*8) {
-            // Warp player back to the left of the map
-            _x=_x-WIDTH*8
-        }
         _player.update()
 
         // Show/hide text with A button
@@ -644,7 +640,11 @@ class MainState is State {
     }
 
     draw() {
-        TIC.map(_x/8, 0, MAP_W+1, MAP_H+1, -(_x%8), 0)
+        var mapX = _x%(WIDTH*2)
+        TIC.map(0, 0, MAP_W*2, MAP_H, -mapX, 0)
+        if(mapX>WIDTH){
+            TIC.map(0, 0, MAP_W+1, MAP_H+1, -mapX+WIDTH*2, 0)
+        }
         _player.draw(_x,_y)
         _mouse.draw(_x,_y)
 
