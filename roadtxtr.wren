@@ -587,7 +587,6 @@ class TitleState is SkipState {
 
 class MainState is State {
     construct new() {
-        _random=Random.new()
         _x=0
         _y=0
         _speed=5
@@ -621,7 +620,7 @@ class MainState is State {
         _player.update()
 
         if(tt%60==0) {
-            _obstacles.add(Mouse.new(_x+WIDTH,_random.int(HEIGHT-20)+10))
+            _obstacles.add(Mouse.new(_x+WIDTH,RANDOM.int(HEIGHT-20)+10))
         }
 
         _obstacles=_obstacles.where {|obstacle| obstacle.x>_x-100}.toList
@@ -659,8 +658,8 @@ class MainState is State {
 
         _currentTime = _currentTime + 1
         if(_currentTime == EVENT_TICK) {
-           _rand = _random.int(_messages.count)
-           _randOrder = _random.int(2)
+           _rand = RANDOM.int(_messages.count)
+           _randOrder = RANDOM.int(2)
            if (_randOrder == 0 ) {
             _correctOnZ = true
            } else {
@@ -899,11 +898,9 @@ class GameMap {
 
     replace(idx){
         var idxCoords=mapIdxToCoords(idx)
-        TIC.trace("%(idxCoords[0]),%(idxCoords[1])")
         // Replace map at idx with tiles from a random template
         var template=RANDOM.int(2,5)
         var templateCoords=mapIdxToCoords(template)
-        TIC.trace("%(template)...%(templateCoords[0]),%(templateCoords[1])")
         for(y in 0...MAP_H){
             for(x in 0...MAP_W){
                 TIC.mset(idxCoords[0]+x,idxCoords[1]+y,TIC.mget(templateCoords[0]+x,templateCoords[1]+y))
