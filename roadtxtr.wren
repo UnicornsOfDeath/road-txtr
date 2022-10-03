@@ -31,9 +31,10 @@ var TXT_X=120
 var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y-10
-var EVENT_TICK=600
+var EVENT_TICK=200
 var WIN_X=2000
 var STRESS_TICK=120
+var SHAKING_TICK=30
 var RANDOM=Random.new()
 var DEBUG_HITBOX=true
 
@@ -766,6 +767,7 @@ class MainState is State {
 
     wrongAnswer() {
         _player.makeStressed()
+        _map.shakeItOff()
     }
 }
 
@@ -1222,6 +1224,9 @@ class Phone {
 class GameMap {
     construct new() {
         _x=0
+        _y=0
+        _shakeCount=0
+        _shaking=false
         _difficulty=0
         replace(1)
     }
@@ -1270,10 +1275,27 @@ class GameMap {
         if(x>WIN_X*2/3){
             _difficulty=2
         }
+        if (_shaking) {
+            _shakeCount = _shakeCount + 1
+            if (_shakeCount % 2 == 0) {
+                _y  = _y + 2
+            } else {
+                _y  = _y - 2
+            }
+        }
+        if (_shakeCount >= SHAKING_TICK) {
+            _y = 0
+            _shakeCount = 0
+            _shaking = false
+        }
+    }
+
+    shakeItOff() {
+       _shaking = true
     }
 
     draw() {
-        TIC.map(0, 0, MAP_W*3, MAP_H, -_x, 0)
+        TIC.map(0, 0, MAP_W*3, MAP_H, -_x, _y)
         if(_x>=WIDTH*2){
             TIC.map(0, 0, MAP_W, MAP_H, -_x+WIDTH*3, 0)
         }
