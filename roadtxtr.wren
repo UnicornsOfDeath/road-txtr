@@ -505,7 +505,7 @@ class SkipState is State {
     canSkip {tt>_grace}
 
 	next() {
-        if (canSkip && (TIC.btnp(0) || TIC.btnp(1) || TIC.btnp(2) || TIC.btnp(3) || TIC.btnp(4) || TIC.btnp(5))) {
+        if (canSkip && (TIC.btnp(0) || TIC.btnp(1) || TIC.btnp(2) || TIC.btnp(3) || TIC.btnp(4) || TIC.btnp(5) || TIC.btnp(6) || TIC.btnp(7))) {
 			finish()
 			nextstate.reset()
 			return nextstate
@@ -777,8 +777,6 @@ class MainState is State {
 
         _progressbar.draw(_x)
         _phone.draw()
-
-        TIC.print("_x: %(_x)", 2, HEIGHT-16, 0)
     }
 
     wrongAnswer() {
@@ -1220,6 +1218,7 @@ class Phone {
     }
 
     showPhone() {
+        TIC.sfx(SFXTXT)
          _choiceMade = false
          _showPhone = true
          _rand = RANDOM.int(_messages.count)
