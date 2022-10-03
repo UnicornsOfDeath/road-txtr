@@ -1272,15 +1272,20 @@ class Phone {
         
     }
 
+    roundedRect(x,y,w,h,r,c){
+        TIC.circ(x,y,r,c)
+        TIC.circ(x+w,y,r,c)
+        TIC.circ(x,y+h,r,c)
+        TIC.circ(x+w,y+h,r,c)
+        TIC.rect(x,y-r,w,h+r*2+1,c)
+        TIC.rect(x-r,y,w+r*2+1,h,c)
+    }
+
     draw() {
         //if (_showPhone){
             var R=8
             var PHONE_C=0
-            TIC.circ(TXT_X,_y,R,PHONE_C)
-            TIC.circ(TXT_X+TXT_W,_y,R,PHONE_C)
-            TIC.rect(TXT_X,_y-R,TXT_W,R,PHONE_C)
-            TIC.rect(TXT_X-R,_y,R,TXT_H,PHONE_C)
-            TIC.rect(TXT_X+TXT_W,_y,R+1,TXT_H,PHONE_C)
+            roundedRect(TXT_X,_y,TXT_W,TXT_H,R,PHONE_C)
             var y=_y
             TIC.rect(TXT_X,y,TXT_W,TXT_H,12)
             TIC.rect(TXT_X,y,TXT_W,20,13)
@@ -1289,21 +1294,23 @@ class Phone {
             TIC.spr(_profilePic,TXT_X+5,y+2,0,2)
             TIC.print(_messages[_messageIndex].sender,TXT_X+26,y+4,0)
             y=y+20
-            TIC.rect(TXT_X+3,y+2,TXT_W-15,25,13)
+            roundedRect(TXT_X+6,y+5,TXT_W-15,30,3,13)
             TIC.print(_messages[_messageIndex].message,TXT_X+5,y+4,0)
 
 
             y=y+40
-            TIC.rectb(TXT_X+3,y+2,10,10,13)
-            TIC.print("A",TXT_X+5,y+4,0)
+            roundedRect(TXT_X+5,y+2,TXT_W-20,8,2,6)
+            TIC.rectb(TXT_X+4,y+2,10,10,13)
+            TIC.print("A",TXT_X+6,y+4,0)
             if (_correctOnZ == true) {
                 TIC.print(_messages[_messageIndex].correct,TXT_X+15,y+4,0)
             } else {
                 TIC.print(_messages[_messageIndex].wrong,TXT_X+15,y+4,0)
             }
             y=y+15
-            TIC.rectb(TXT_X+3,y+2,10,10,13)
-            TIC.print("Z",TXT_X+5,y+4,0)
+            roundedRect(TXT_X+5,y+2,TXT_W-20,8,2,6)
+            TIC.rectb(TXT_X+4,y+2,10,10,13)
+            TIC.print("Z",TXT_X+6,y+4,0)
             if (_correctOnZ == true) {
                 TIC.print(_messages[_messageIndex].wrong,TXT_X+15,y+4,0)
             } else {
