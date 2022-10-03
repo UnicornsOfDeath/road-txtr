@@ -579,7 +579,6 @@ class TitleState is State {
         _player=Player.new(10,40,0)
         _nextStateCounter=0
         _phone=Phone.new()
-        _phone.showPhone()
     }
 
     isSwitchingToNextState{_nextStateCounter>0}
@@ -616,6 +615,10 @@ class TitleState is State {
         if(isSwitchingToNextState){
             _nextStateCounter=_nextStateCounter-1
         }
+        _phone.update()
+        if (!_phone.isShowing()){
+            _phone.showPhone([Message.new("Helpful Person", "Drive the car\nup/down.\nIsn't this\ngame great?","Yes!","No...")])
+        }
     }
 
     draw() {
@@ -624,8 +627,8 @@ class TitleState is State {
         TIC.print(">>> START GAME",30,100,12+(tt/20)%2)
         _player.draw(0,0)
         _phone.draw()
-        var cf=ChunkyFont.new(50,20)
-        cf.s("^43ROAD\n^56TEXTER")
+        var cf=ChunkyFont.new(30,20)
+        cf.s("^43ROAD\n^56TXTR")
     }
 }
 
