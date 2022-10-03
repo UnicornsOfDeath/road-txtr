@@ -1182,6 +1182,15 @@ class Phone {
         }
     }
 
+    showPhone(messages) {
+         _choiceMade = false
+         _showPhone = true
+         _messages = messages
+         _rand = RANDOM.int(_messages.count)
+         _randOrder = RANDOM.int(2)
+         _correctOnZ = _randOrder == 0
+    }
+
     showPhone() {
          _choiceMade = false
          _showPhone = true
