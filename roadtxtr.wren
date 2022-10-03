@@ -29,9 +29,9 @@ var TXT_X=120
 var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y-10
-var EVENT_TICK=200
+var EVENT_TICK=600
 var WIN_X=2000
-var STRESS_TICK=100
+var STRESS_TICK=120
 var RANDOM=Random.new()
 var DEBUG_HITBOX=true
 
@@ -630,9 +630,31 @@ class MainState is State {
         _correctOnZ=true
         _correctChoice=false
         _choiceMade=false
-        var message1 = Message.new("Martinez", "Hello! Is your\nrefrigerator\nrunning?","Yes","Too poor to own a fridge")
-        var message2 = Message.new("Ezekial", "Hey!\nWhats your name?","Tony","Fuck you Tony")
-        _messages = [message1, message2]
+        var message1 = Message.new("Roomie", "Did you eat the\ncake I left in the\nfridge?","No way","Yes way")
+        var message2 = Message.new("Babe", "Are you ready to\nmeet my family\ntonight?","Of course","Of course not")
+        var message3 = Message.new("Boss", "Can you please stop\nsaying smells like\nvagina when you\npast my office","acceptable","unacceptable")
+        var message4 = Message.new("Mum", "Hi, Mum here\nHave you forgotten\nyour grandma's\nbirthday?","No","Yes")
+        var message5 = Message.new("Bestie", "We hitting the town\nthis weekend?\nIt has been a while.","Hell yes","Hell no")
+        var message6 = Message.new("Bestie", "Did my girlfriend\nsend nudes to you?","Hell no","Hell yes")
+        var message7 = Message.new("Roomie", "Can you please\nstop using my\ntowel after you\nhave a shower?","Yes way","No way")
+        var message8 = Message.new("Babe", "Do you think I\nlook I look\nfat in my new\ndress?","Of course not","Of course")
+        var message9 = Message.new("Bestie", "Impression yoda my\nlike you do?","Hell yes","Hell no")
+        var message10 = Message.new("Boss", "Hawaiian shirt day\nwill be on every\nfriday from now\non ","unacceptable","acceptable")
+        var message11 = Message.new("Mum", "Hi, Mum here\nWill you be joining\nus for Christmas\nlunch?","Yes","No")
+        var message12 = Message.new("Mum", "Hi, Mum here\nI think I put a\nvirus on my\ncomputer. Can you\nfix it now?","Yes","No")
+        var message13 = Message.new("Bestie", "When I move\noverseas are you\ngoing to forget me?","Hell no","Hell yes")
+        var message14 = Message.new("Boss", "I'm going to\nneed those TPS\nreports ASAP ","acceptable","unacceptable")
+        var message15 = Message.new("Babe", "Just watching\nfarmer wants a wife\nand do you think\nJamie is hotter\nthan me?","Of course not","Of course")
+        var message16 = Message.new("Babe", "Was thinking of\nyou today. Did you\nthink of me?","Of course","Of course not")
+        var message17 = Message.new("Mum", "Hi, Mum here\nDo you think it\nwould be too much\n effort call me\nsometime?","No","Yes")
+        var message18 = Message.new("Roomie", "Can you please\nlearn to flush\nthe toilet. Sick\nof surprises","Yes way","No way")
+        var message19 = Message.new("Roomie", "Did you set up\na camera in my\nbedroom to spy\non me?","No way","Yes way")
+        var message20 = Message.new("Bestie", "Hey, Birthday this\nweekend. You coming\nyeah?","Hell yes","Hell no")
+
+
+        _messages = [message1,message2,message3,message4,message5,message6,message7,message8,message9,
+        message10,message11,message12,message13,message14,message15,message16,message17,message18,message19,
+        message20]
         _progressbar = ProgressBar.new()
 		_winstate=this
     }
