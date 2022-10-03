@@ -58,6 +58,7 @@ var TILE_SIZE_2=16
 
 var ROAD_TILES=[0,1,2,3,32,33]
 var GRASS_TILES=[64,65,80,81]
+var FOOTPATH_TILES=[66,67,82,83,98,99,114,115]
 
 class ChunkyFont {
 
@@ -684,9 +685,19 @@ class MainState is State {
         _player.isOnGrass =_map.tileAtPixelIs(_player.x+24,_player.y+8,GRASS_TILES)
 
         if(tt%60==0) {
+            var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,ROAD_TILES+FOOTPATH_TILES)
+
+            var dir=RANDOM.int(0,2)*2-1
+
+            if(_map.tileAtPixelIs(coords[0],coords[1],ROAD_TILES)) {
+                _obstacles.add(Oldie.new(coords[0],coords[1],0,dir))
+            } else {
+                _obstacles.add(Oldie.new(coords[0],coords[1],dir,0))
+            }
+        }
+
+        if((tt+15)%50==0) {
             var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,ROAD_TILES)
-            _obstacles.add(Oldie.new(coords[0],coords[1]))
-            coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,ROAD_TILES)
             _obstacles.add(Post.new(coords[0],coords[1]))
             TIC.trace(coords[0])
         }
@@ -1089,8 +1100,12 @@ class FlyingObstacle is Obstacle {
 }
 
 class Oldie is FlyingObstacle {
-    construct new(x,y) {
+    construct new(x,y,walkDirX,walkDirY) {
         super(x,y,260,true,2)
+
+        __walkingSpeed=0.25
+        _walkingSpeedX=walkDirX*__walkingSpeed
+        _walkingSpeedY=walkDirY*__walkingSpeed
     }
 
     update(){
