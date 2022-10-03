@@ -984,8 +984,9 @@ class Player is GameObject {
         _speed=speed
         _ticks=0
         _frame=0
-        _steeringSpeed=1
+        _steeringSpeed=1.5
         _stressTick=0
+        _dy=0
         _health=10
         _stressed=false
         _isOnGrass=false
@@ -1013,14 +1014,16 @@ class Player is GameObject {
         if(_stressed == true) {
             _stressTick=_stressTick + 1
         } else {
+            var ddy=0
             if(TIC.btn(BTN_UP)) {
-                y=y-_steeringSpeed
+                ddy=-1
+            }else if(TIC.btn(BTN_DOWN)) {
+                ddy=1
             }
-            if(TIC.btn(BTN_DOWN)) {
-                y=y+_steeringSpeed
-            }
-            y=y.clamp(8,HEIGHT-16)
+            _dy=(_dy+ddy*0.5).clamp(-1,1)
         }
+        _dy=(_dy-_dy.sign*0.15).clamp(-1,1)
+        y=(y+_dy*_steeringSpeed).clamp(8,HEIGHT-16)
         if(_stressTick >= STRESS_TICK) {
            _stressTick = 0
            _stressed = false 
