@@ -736,11 +736,6 @@ class MainState is State {
             _currentTime = 0
         }
 
-        // Skip to death screen with B button
-        if(TIC.btnp(BTN_X)){
-            _player.onHit(9999)
-        }
-
         _progressbar.update()
         if (_phone.isWrong() == true) {
             wrongAnswer()
@@ -782,7 +777,6 @@ class MainState is State {
         _progressbar.draw(_x)
         _phone.draw()
 
-        TIC.print("A to suicide",140,HEIGHT-8,0)
         TIC.print("_x: %(_x)", 2, HEIGHT-16, 0)
     }
 
