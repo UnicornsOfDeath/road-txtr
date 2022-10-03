@@ -485,6 +485,7 @@ class SkipState is State {
     }
 
 	finish() {
+        TIC.sfx(-1)
 		TIC.sfx(SFXNEXT)
     }
 
@@ -579,24 +580,55 @@ class SplashState is SkipState {
     }
 }
 
-class TitleState is SkipState {
+class TitleState is State {
 	construct new() {
-		super(10)
+        _player=Player.new(10,40,0)
+        _nextStateCounter=0
     }
+
+    isSwitchingToNextState{_nextStateCounter>0}
 
 	reset() {
 		super.reset()
 		TIC.music(MUSTITLE,-1,-1,false)
+        _player=Player.new(10,40,0)
+        _nextStateCounter=0
     }
 
 	finish() {
-        return
+		TIC.sfx(SFXNEXT)
+        _nextStateCounter=40
+        TIC.music() // stop
     }
 
-	draw() {
-		super.draw()
-		TIC.cls(COLOR_BG)
-		TIC.print("This is the title screen!\nPress any key to go back to the\nsplash screen", 10, 10)
+    next() {
+        if(_nextStateCounter==1){
+			nextstate.reset()
+			return nextstate
+        }
+		return super()
+    }
+
+    update(){
+        super.update()
+        if(!isSwitchingToNextState){
+            _player.update()
+            if(_player.y>95){
+                finish()
+            }
+        }
+        if(isSwitchingToNextState){
+            _nextStateCounter=_nextStateCounter-1
+        }
+    }
+
+    draw() {
+        super.draw()
+        TIC.cls(COLOR_BG)
+        TIC.print(">>> START GAME",30,100,12+(tt/20)%2)
+        _player.draw(0,0)
+        var cf=ChunkyFont.new(50,20)
+        cf.s("^43ROAD\n^56TEXTER")
     }
 }
 
@@ -639,6 +671,7 @@ class MainState is State {
 
         _x=_x+_speed
         _player.update()
+        _player.isOnGrass =_map.tileAtPixelIs(_player.x+24,_player.y+8,GRASS_TILES)
 
         if(tt%60==0) {
             var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,ROAD_TILES)
@@ -693,7 +726,7 @@ class MainState is State {
                 TIC.sfx(SFXNEXT)
             }
             if (_choiceMade == true && _correctChoice == false) {
-                _player.makeStressed()
+                wrongAnswer()
             }
         }
 
@@ -705,6 +738,10 @@ class MainState is State {
             _correctOnZ = true
            } else {
             _correctOnZ = false
+           }
+           // If message is already shown, stress
+           if (_showText == true) {
+            wrongAnswer()
            }
            _showText=true
            _choiceMade=false
@@ -778,10 +815,10 @@ class MainState is State {
                 TIC.print("Wrong Choice",2, HEIGHT-32, 0)
             }
         }
+    }
 
-        if(_map.tileAtPixelIs(_player.x,_player.y,GRASS_TILES)) {
-            TIC.print("GRASS",0,0)
-        }
+    wrongAnswer() {
+        _player.makeStressed()
     }
 }
 
@@ -920,6 +957,15 @@ class Player is GameObject {
         _stressTick=0
         _health=10
         _stressed=false
+        _isOnGrass=false
+    }
+    isOnGrass=(value){
+        if(value&&!_isOnGrass){
+            TIC.sfx(SFXGRASS)
+        }else if(!value&&_isOnGrass){
+            TIC.sfx(-1)
+        }
+        _isOnGrass=value
     }
 
     onHit(dmg){
@@ -1435,7 +1481,7 @@ class Game is TIC{
 // 002:06000600060006000600160026002600360046006600760086009600a600d600f600f600f600f600f600f600f600f600f600f600f600f600f600f600105000000000
 // 003:04073402640f840ea40dd40ce40cf40bf408f408f408f408f408f408f408f408f408f408f408f408f408f408f40af409f40af409f40af400f400f400a00000000000
 // 004:8367335703451355136333514301530f630e730d830c930b930aa30aa30ab309c308c308d308d308d308e308e308e308f308f308f308f308f308f308400000000600
-// 005:d400e400d400c400c400d400e400d400e400d400c400c400d400e400e400c400d400f400f400f400e400b400a400a400a400a400b400c400d400e4004700000f0000
+// 005:d400d400d400c400c400d400d400d400e400e400d400d400c400c400d400c400d400f400f400f400e400b400a400a400a400a400b400c400d400e4004000000f0000
 // 048:04002100410f610f910ee10ef10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10dc0b000000000
 // 049:64008400b400e400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400300000000000
 // 050:1400640fa40ef40df40cf40bf409f408f408f408f409f409f408f408f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400b00000000000
