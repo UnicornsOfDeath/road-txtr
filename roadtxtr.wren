@@ -1042,7 +1042,7 @@ class Obstacle is GameObject {
 
 class FlyingObstacle is Obstacle {
     // Obstacle that flies away when hit
-    construct new(x,y,sprite,animated,tileHeight) {
+    construct new(x,y,sprite,animated,tileHeight,flip) {
         super(x,y,1,Rect.new(4,3,7,7))
         _ticks=0
         _dy=0
@@ -1050,6 +1050,7 @@ class FlyingObstacle is Obstacle {
         _sprite=sprite
         _animated=animated
         _tileHeight=tileHeight
+        _flip=flip
     }
     ticks{_ticks}
 
@@ -1075,7 +1076,7 @@ class FlyingObstacle is Obstacle {
         var drawY=y-camY-_tileHeight*8+8
         if(isAlive){
             var frame=_animated ? (_ticks/30).floor%2 : 0
-            TIC.spr(_sprite+frame,drawX,drawY,0,1,0,0,1,_tileHeight)
+            TIC.spr(_sprite+frame,drawX,drawY,0,1,_flip?1:0,0,1,_tileHeight)
         }else{
             var frame=_animated ? (_ticks/5).floor%2 : 0
             var r=_animated ? ((_ticks/10).floor%4)*90 : 0
@@ -1086,7 +1087,7 @@ class FlyingObstacle is Obstacle {
 
 class Oldie is FlyingObstacle {
     construct new(x,y,walkDirX,walkDirY,sprite) {
-        super(x,y,sprite,true,2)
+        super(x,y,sprite,true,2,(walkDirX==-1||RANDOM.int(0,2)==0)&&walkDirX!=1)
 
         __walkingSpeed=0.25
         _walkingSpeedX=walkDirX*__walkingSpeed
@@ -1108,7 +1109,7 @@ class Oldie is FlyingObstacle {
 
 class Post is FlyingObstacle {
     construct new(x,y) {
-        super(x,y,292,false,4)
+        super(x,y,292,false,4,false)
     }
 }
 
