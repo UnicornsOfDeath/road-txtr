@@ -686,27 +686,35 @@ class MainState is State {
 
         if(tt%60==0) {
             var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,ROAD_TILES+FOOTPATH_TILES)
+            
+            if(coords!=null) {
+                var dir=RANDOM.int(0,2)*2-1
 
-            var dir=RANDOM.int(0,2)*2-1
-
-            if(_map.tileAtPixelIs(coords[0],coords[1],ROAD_TILES)) {
-                _obstacles.add(Oldie.new(coords[0],coords[1],0,dir))
-            } else {
-                _obstacles.add(Oldie.new(coords[0],coords[1],dir,0))
+                if(_map.tileAtPixelIs(coords[0],coords[1],ROAD_TILES)) {
+                    _obstacles.add(Oldie.new(coords[0],coords[1],0,dir))
+                } else {
+                    _obstacles.add(Oldie.new(coords[0],coords[1],dir,0))
+                }
             }
         }
 
         if((tt+15)%50==0) {
-            var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,ROAD_TILES)
-            _obstacles.add(Post.new(coords[0],coords[1]))
+            var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,FOOTPATH_TILES)
+
+            if(coords!=null) {
+                _obstacles.add(Post.new(coords[0],coords[1]))
+            }
         }
 
         if(tt%10==0) {
             var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,GRASS_TILES)
-            if(RANDOM.int(0,2)==0) {
-                _obstacles.add(PalmTree.new(coords[0],coords[1]-TILE_SIZE_2))
-            } else {
-                _obstacles.add(PineTree.new(coords[0],coords[1]-TILE_SIZE_2))
+
+            if(coords!=null) {
+                if(RANDOM.int(0,2)==0) {
+                    _obstacles.add(PalmTree.new(coords[0],coords[1]-TILE_SIZE_2))
+                } else {
+                    _obstacles.add(PineTree.new(coords[0],coords[1]-TILE_SIZE_2))
+                }
             }
         }
 
@@ -1220,6 +1228,7 @@ class GameMap {
     findYforRandomTileWithIdsAtX(x,tileIDs) {
         var tileX=(x/TILE_SIZE_2).floor+1
         var tileOptions = (0...(HEIGHT/TILE_SIZE_2).floor).where {|i| tileIDs.contains(tile2At(tileX,i))}.toList
+        if(tileOptions.count==0) return null
         var randomTileY = tileOptions[RANDOM.int(0,tileOptions.count)]
         return [tileX*TILE_SIZE_2,randomTileY*TILE_SIZE_2+TILE_SIZE]
     }
