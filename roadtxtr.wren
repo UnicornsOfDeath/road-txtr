@@ -53,6 +53,10 @@ var BTN_B=5
 var BTN_X=6
 var BTN_Y=7
 
+// SPRITES
+
+var PEDESTRIAN_SPRITES=[256,258,260,262,264,266,268,270]
+
 // TILE IDs
 var TILE_SIZE=8
 var TILE_SIZE_2=16
@@ -665,11 +669,12 @@ class MainState is State {
             
             if(coords!=null) {
                 var dir=RANDOM.int(0,2)*2-1
+                var sprite=RANDOM.sample(PEDESTRIAN_SPRITES)
 
                 if(_map.tileAtPixelIs(coords[0],coords[1],ROAD_TILES)) {
-                    _obstacles.add(Oldie.new(coords[0],coords[1],0,dir))
+                    _obstacles.add(Oldie.new(coords[0],coords[1],0,dir,sprite))
                 } else {
-                    _obstacles.add(Oldie.new(coords[0],coords[1],dir,0))
+                    _obstacles.add(Oldie.new(coords[0],coords[1],dir,0,sprite))
                 }
             }
         }
@@ -1070,8 +1075,8 @@ class FlyingObstacle is Obstacle {
 }
 
 class Oldie is FlyingObstacle {
-    construct new(x,y,walkDirX,walkDirY) {
-        super(x,y,260,true,2)
+    construct new(x,y,walkDirX,walkDirY,sprite) {
+        super(x,y,sprite,true,2)
 
         __walkingSpeed=0.25
         _walkingSpeedX=walkDirX*__walkingSpeed
