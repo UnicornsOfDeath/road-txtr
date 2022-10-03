@@ -699,7 +699,6 @@ class MainState is State {
         if((tt+15)%50==0) {
             var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,ROAD_TILES)
             _obstacles.add(Post.new(coords[0],coords[1]))
-            TIC.trace(coords[0])
         }
 
         if(tt%10==0) {
@@ -1261,7 +1260,7 @@ class Game is TIC{
 	
 	TIC(){
         TIC.cls(1)
-        TIC.poke(MOUSE_CURSOR,431)
+        TIC.poke(MOUSE_CURSOR,74)
 
         _state.update()
         _state.draw()
