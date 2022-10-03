@@ -617,7 +617,13 @@ class TitleState is State {
         }
         _phone.update()
         if (!_phone.isShowing()){
-            _phone.showPhone([Message.new("Helpful Person", "Drive the car\nup/down.\nIsn't this\ngame great?","Yes!","No...")])
+            _phone.showPhone([
+                Message.new("Game hint", "Drive the car\nup/down.\nIsn't this\ngame great?","Yes!","No..."),
+                Message.new("Game hint", "Hitting trees\nand pedestrians\ndamages the car!","Got it","Who cares"),
+                Message.new("Game hint", "Answer texts\nto hide the phone","Like this","Go away"),
+                Message.new("Game hint", "Wrong replies\nwill freeze\nthe car","Sure","Liar"),
+                Message.new("Game hint", "What is 1+1?","2","I refuse")
+            ])
         }
     }
 
@@ -1168,14 +1174,14 @@ class Phone {
     } 
     update() {
         if (_showPhone == true) {
-            if(TIC.btnp(BTN_A)){
+            if(TIC.btnp(BTN_X)){
                 _correctChoice = _correctOnZ == true
                 _choiceMade=true
                 _showPhone=false
                 
                 TIC.sfx(_correctChoice?SFXRIGHT:SFXWRONG)
             }
-            if(TIC.btnp(BTN_B)){
+            if(TIC.btnp(BTN_A)){
                 _correctChoice = _correctOnZ == false
                 _choiceMade=true
                 _showPhone=false
@@ -1234,13 +1240,13 @@ class Phone {
             TIC.rect(TXT_X,y,TXT_W,20,13)
             TIC.print(_messages[_rand].sender,TXT_X+4,y+4,0)
             y=y+20
-            TIC.rect(TXT_X+3,y+2,TXT_W-35,25,13)
+            TIC.rect(TXT_X+3,y+2,TXT_W-15,25,13)
             TIC.print(_messages[_rand].message,TXT_X+5,y+4,0)
 
 
             y=y+40
             TIC.rectb(TXT_X+3,y+2,10,10,13)
-            TIC.print("Z",TXT_X+5,y+4,5)
+            TIC.print("A",TXT_X+5,y+4,0)
             if (_correctOnZ == true) {
                 TIC.print(_messages[_rand].correct,TXT_X+15,y+4,0)
             } else {
@@ -1248,7 +1254,7 @@ class Phone {
             }
             y=y+15
             TIC.rectb(TXT_X+3,y+2,10,10,13)
-            TIC.print("X",TXT_X+5,y+4,2)
+            TIC.print("Z",TXT_X+5,y+4,0)
             if (_correctOnZ == true) {
                 TIC.print(_messages[_rand].wrong,TXT_X+15,y+4,0)
             } else {
