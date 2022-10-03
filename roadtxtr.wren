@@ -32,7 +32,7 @@ var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y
 var EVENT_TICK=600
-var WIN_X=10000
+var WIN_X=6000
 var STRESS_TICK=120
 var SHAKING_TICK=30
 var RANDOM=Random.new()
@@ -1141,6 +1141,7 @@ class Phone {
         _correctOnZ=true
         _correctChoice=false
         _choiceMade=false
+        _y=HEIGHT
         var message1 = Message.new("Roomie", "Did you eat the\ncake I left in the\nfridge?","No way","Yes way")
         var message2 = Message.new("Babe", "Are you ready to\nmeet my family\ntonight?","Of course","Of course not")
         var message3 = Message.new("Boss", "Can you please stop\nsaying smells like\nvagina when you\npast my office","acceptable","unacceptable")
@@ -1169,19 +1170,32 @@ class Phone {
     } 
     update() {
         if (_showPhone == true) {
-            if(TIC.btnp(BTN_A)){
+            if (_y > TXT_Y) {
+                _y= _y - 10
+            }
+            if (_y < TXT_Y) {
+                _y = TXT_Y
+            }
+            if(TIC.btnp(BTN_X)){
                 _correctChoice = _correctOnZ == true
                 _choiceMade=true
                 _showPhone=false
                 
                 TIC.sfx(_correctChoice?SFXRIGHT:SFXWRONG)
             }
-            if(TIC.btnp(BTN_B)){
+            if(TIC.btnp(BTN_A)){
                 _correctChoice = _correctOnZ == false
                 _choiceMade=true
                 _showPhone=false
 
                 TIC.sfx(_correctChoice?SFXRIGHT:SFXWRONG)
+            }
+        } else {
+            if (_y < HEIGHT) {
+                _y= _y + 10
+            }
+            if (_y > HEIGHT) {
+                _y = HEIGHT
             }
         }
     }
@@ -1222,26 +1236,26 @@ class Phone {
     }
 
     draw() {
-        if (_showPhone){
+        //if (_showPhone){
             var R=8
             var PHONE_C=0
-            TIC.circ(TXT_X,TXT_Y,R,PHONE_C)
-            TIC.circ(TXT_X+TXT_W,TXT_Y,R,PHONE_C)
-            TIC.rect(TXT_X,TXT_Y-R,TXT_W,R,PHONE_C)
-            TIC.rect(TXT_X-R,TXT_Y,R,TXT_H,PHONE_C)
-            TIC.rect(TXT_X+TXT_W,TXT_Y,R+1,TXT_H,PHONE_C)
-            var y=TXT_Y
+            TIC.circ(TXT_X,_y,R,PHONE_C)
+            TIC.circ(TXT_X+TXT_W,_y,R,PHONE_C)
+            TIC.rect(TXT_X,_y-R,TXT_W,R,PHONE_C)
+            TIC.rect(TXT_X-R,_y,R,TXT_H,PHONE_C)
+            TIC.rect(TXT_X+TXT_W,_y,R+1,TXT_H,PHONE_C)
+            var y=_y
             TIC.rect(TXT_X,y,TXT_W,TXT_H,12)
             TIC.rect(TXT_X,y,TXT_W,20,13)
             TIC.print(_messages[_rand].sender,TXT_X+4,y+4,0)
             y=y+20
-            TIC.rect(TXT_X+3,y+2,TXT_W-35,25,13)
+            TIC.rect(TXT_X+3,y+2,TXT_W-15,25,13)
             TIC.print(_messages[_rand].message,TXT_X+5,y+4,0)
 
 
             y=y+40
             TIC.rectb(TXT_X+3,y+2,10,10,13)
-            TIC.print("Z",TXT_X+5,y+4,5)
+            TIC.print("A",TXT_X+5,y+4,0)
             if (_correctOnZ == true) {
                 TIC.print(_messages[_rand].correct,TXT_X+15,y+4,0)
             } else {
@@ -1249,13 +1263,13 @@ class Phone {
             }
             y=y+15
             TIC.rectb(TXT_X+3,y+2,10,10,13)
-            TIC.print("X",TXT_X+5,y+4,2)
+            TIC.print("Z",TXT_X+5,y+4,0)
             if (_correctOnZ == true) {
                 TIC.print(_messages[_rand].wrong,TXT_X+15,y+4,0)
             } else {
                 TIC.print(_messages[_rand].correct,TXT_X+15,y+4,0)
             }
-        }
+       //}
     }
 }
 
@@ -1520,21 +1534,28 @@ class Game is TIC{
 // 033:0000000000000000000000000000000050000000670000006700000067000560
 // 035:0000000000000000000000000000000000000000000000000700000077000000
 // 036:000ff00000fa9f0000fa9f0000ffff000faaa9f00faaa9f00faaa9f00faaa9f0
+// 038:00ffffff0f222222f22f2222f222f22ff2222ff2f2222ff2f222f22fff2f2222
+// 039:ff00000022f00000f21f0000221f0000221f0000221f0000211f0000f1f00000
 // 048:5555600666666667077666660007777700000666000056660056666605666667
 // 049:6770566667756670777667007757700075666000676666007176670011066770
 // 050:0000000700000076000000660000006600007766000067660000f66700000607
 // 051:660000006770000077770000607f0000777700007677f0006667f00066677000
 // 052:0fa999f00ffffff00fccccf000ffff0000fa9f0000fa9f0000fa9f0000fa9f00
+// 054:00f2211100ffffff00fccccc00ffffff0000fa9f0000fa9f0000fa9f0000fa9f
+// 055:1f000000ff000000cf000000ff00000000000000000000000000000000000000
 // 064:5666677266677032677000320700003300000322000003210000032100000321
 // 065:2107677011007770110077002000070010000000100000001000000010000000
 // 066:0000777600077677000766770007666707676666077667770fff66ffff066606
 // 067:6677f7001667777066677f70667ffff0666ff0f0777f77f067777f7f677777ff
 // 068:00fa9f0000fa9f0000fa9f0000fa9f0000fa9f0000fa9f0000fa9f0000fa9f00
+// 070:0000fa9f0000fa9f0000fa9f0000fa9f0000fa9f0000fa9f0000fa9f0000fa9f
 // 080:0000033200003221000032110000321100003211000001110000000000000000
 // 081:1000000010000000100000001000000010000000000000000000000000000000
 // 082:0ff7767700ff77770000ffff0000000100000001000000110000000100000000
 // 083:7ff7fff0777ffff0fffff0001100000011000000111000001100000000000000
 // 084:00fa9f0000fa9f000fa999f00faffff00faa99f00faaa9f00faa99f000ffff00
+// 086:0000fa9f0000fa9f000fa999000fafff000faa99000faaa9000faa990000ffff
+// 087:0000000000000000f0000000f0000000f0000000f0000000f000000000000000
 // 096:000fffff00f1222200f121110f9122220f912222f9912222f9a12222f9a12222
 // 097:ffffffff22222222111111112222222222222222222222222222222222222222
 // 098:fffff00022222f0011122f0022222ff022222f9f22222f9f22222f9a22222faa
