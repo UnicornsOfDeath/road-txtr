@@ -771,7 +771,6 @@ class MainState is State {
     }
 
     wrongAnswer() {
-        TIC.trace("Wrong answer being called")
         _player.makeStressed()
         _map.shakeItOff()
     }
