@@ -1415,7 +1415,7 @@ class GameMap {
             replace(0)
         }else if(_x>=WIDTH*2&&oldX<WIDTH*2){
             // 1->2
-            replace(0)
+            replace(1)
         }
         // Ramp up difficulty as we get closer to the end
         if (x>WIN_X/3){
