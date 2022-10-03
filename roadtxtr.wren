@@ -519,11 +519,11 @@ class SplashState is SkipState {
 		super(10)
 		_len=250
 		_texts=[
-			SplashStateText.new(0,"^56u^deni"),
-			SplashStateText.new(1,"^56u^deni^56c^deorns"),
-			SplashStateText.new(2,"^56u^deni^56c^deorns\n^56o^def"),
-			SplashStateText.new(3,"^56u^deni^56c^deorns\n^56o^def^56d^deeath"),
-			SplashStateText.new(4,"^56u^deni^56c^deorns\n^56o^def^56d^deeath\n^56g^deames"),
+			SplashStateText.new(0,"^56u"),
+			SplashStateText.new(1,"^56u^deni"),
+			SplashStateText.new(2,"^56u^deni^56c^deorns"),
+			SplashStateText.new(3,"^56u^deni^56c^deorns\n^56o^def"),
+			SplashStateText.new(4,"^56u^deni^56c^deorns\n^56o^def^21DEATH"),
         ]
     }
 
@@ -543,34 +543,16 @@ class SplashState is SkipState {
 			tx=text.tx
         }
 		if (tx!=null) {
-			var cf=ChunkyFont.new(50,20)
+			var cf=ChunkyFont.new(50,40)
 			cf.s(tx)
         }
 		if (tt>5.8*MUSBEATTICKS) {
-			//drawface(160,70)
+			drawface(170,36)
         }
     }
 
 	drawface(x,y) {
-		//  head
-		TIC.elli(x,y,35,30,4)
-		TIC.ellib(x,y,35,30,3)
-		// eyes
-		var edx=12
-		TIC.circ(x-edx,y-5,9,12)
-		TIC.circ(x+edx,y-5,9,12)
-		TIC.circ(x-edx,y-5,7,0)
-		TIC.circ(x+edx,y-5,7,0)
-		// mouth
-		var my=y+10
-		var mdx=25
-		var mdy=15
-		var its=16
-		var d=Num.pi/its
-		for (i in 0..its-1) {
-			// draw fan of tris in semi-circle
-			TIC.tri(x,my,x+d*i.cos*mdx,my+(d*i).sin*mdy,x+(d*(i+1)).cos*mdx,my+(d*(i+1)).sin*mdy,2)
-        }
+        TIC.spr(204,x,y,0,1,0,0,4,4)
     }
 
 	next() {
@@ -1268,6 +1250,22 @@ class Game is TIC{
 // 165:9acaaaa9aacaaaaaccaaaaacaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa99999999
 // 166:9acaaaa99acaaaaa9acaaaac9acaaaaa9aaaaaaa9aaaaaaa9aaaaaaa99999999
 // 167:9acaaaa9aaaaaaa9cacaaaa9aaaaaaa9aaaaaaa9aaaaaaa9aaaaaaa999999999
+// 204:0000000000000000000000000000f000000f4f00000f444f0000f34400000f34
+// 205:000000000000000000000000000000000000000000000000f00000004f0fffff
+// 206:0000000c00ff0fcf00f3fcef000fcdcf00fcdef000cdcef0fcddef00cfcfef00
+// 207:f000000000000000000000000000000000000000000000000000000000000000
+// 220:000000f3fff0000f222ff0f412211f44211ff44421f444441f444444f4444444
+// 221:4ff44444f444444444444fff4444fccc444fcccc44fcffcc44fcffcc44fdcccc
+// 222:fddef0004feef000f44ffff0ffffcccfcffccccccdfcccffcdfcccffdffdcccc
+// 223:00000000000000000000000000000000f0000000cf000000cf000000df000000
+// 236:f444444444444444444444444444444f444444f4444444f4444444f4444444f4
+// 237:44ffdccd444fffff444444444444444444444444444444444444444444444444
+// 238:f44fdccd4444ffff444444444444444444444444444444444444444444f44444
+// 239:f4f0000044f00000444f00004444f00044444f00444ffff04ff4444f334444ff
+// 252:444444f4444444f34444444f4444444444444444444444444444444344444333
+// 253:44444434444443443333f344fffff334443f0ff3433f000f33f000003f000000
+// 254:444f4444444fff44444fccf4444fcccf4444ffff33444443ff33444400ffffff
+// 255:34ff44ff44ff444f4444433ffffffff0cccfccf0fff3ff0044433f00fffff000
 // </TILES>
 
 // <SPRITES>
