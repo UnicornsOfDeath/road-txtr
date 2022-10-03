@@ -972,6 +972,7 @@ class Player is GameObject {
         _dy=0
         _maxHealth=10
         _health=_maxHealth
+        _damageshaketick=0
         _stressed=false
         _isOnGrass=false
         _smoke=[]
@@ -988,6 +989,7 @@ class Player is GameObject {
     onHit(dmg){
         TIC.sfx(SFXHIT)
         _health=_health-dmg
+        _damageshaketick=10
         if(_health<0){
             _health=0
         }
@@ -1037,6 +1039,7 @@ class Player is GameObject {
                 _smoke.remove(smoke)
             }
         }
+        _damageshaketick=(_damageshaketick-1).max(0)
     }
 
     damageLevel{
@@ -1044,7 +1047,9 @@ class Player is GameObject {
     }
 
     draw(camX,camY) {
-        TIC.spr(352+damageLevel*48+_frame*4,x-camX,y-camY-8,0,1,0,0,4,3)
+        var dx=_damageshaketick>0?(RANDOM.int(2)-1)*_damageshaketick/5:0
+        var dy=_damageshaketick>0?(RANDOM.int(2)-1)*_damageshaketick/5:0
+        TIC.spr(352+damageLevel*48+_frame*4,x-camX+dx,y-camY-8+dy,0,1,0,0,4,3)
         _smoke.each {|smoke|
             smoke.draw()
         }
