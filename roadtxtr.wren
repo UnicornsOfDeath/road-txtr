@@ -695,8 +695,8 @@ class MainState is State {
         _phone.update()
         _player.isOnGrass =_map.tileAtPixelIs(_player.x+24,_player.y+8,GRASS_TILES)
 
-        if(tt%60==0) {
-            var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,ROAD_TILES+FOOTPATH_TILES)
+        if(tt%(60-(50*_x/WIN_X).floor).floor==0) {
+            var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH+RANDOM.int(0,60),ROAD_TILES+FOOTPATH_TILES)
             
             if(coords!=null) {
                 var dir=RANDOM.int(0,2)*2-1
