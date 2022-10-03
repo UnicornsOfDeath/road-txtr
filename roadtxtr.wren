@@ -1008,6 +1008,7 @@ class Player is GameObject {
             if(TIC.btn(BTN_DOWN)) {
                 y=y+_steeringSpeed
             }
+            y=y.clamp(8,HEIGHT-16)
         }
         if(_stressTick >= STRESS_TICK) {
            _stressTick = 0
