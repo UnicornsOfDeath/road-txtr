@@ -31,8 +31,8 @@ var TXT_X=120
 var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y-10
-var EVENT_TICK=200
-var WIN_X=2000
+var EVENT_TICK=600
+var WIN_X=10000
 var STRESS_TICK=120
 var SHAKING_TICK=30
 var RANDOM=Random.new()
@@ -771,6 +771,7 @@ class MainState is State {
     }
 
     wrongAnswer() {
+        TIC.trace("Wrong answer being called")
         _player.makeStressed()
         _map.shakeItOff()
     }
@@ -1184,7 +1185,7 @@ class Phone {
     }
 
     isShowing() {
-        _showPhone
+        return _showPhone
     }
 
     hidePhone() {
@@ -1192,7 +1193,13 @@ class Phone {
     }
 
     isWrong() {
-        return _choiceMade == true && _correctChoice == false
+        if (_choiceMade == true) {
+            // to stop it from being double checked
+            _choiceMade = false 
+            return _correctChoice == false
+        } 
+        return false
+        
     }
 
     draw() {
