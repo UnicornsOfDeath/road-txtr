@@ -504,7 +504,7 @@ class SkipState is State {
     canSkip {tt>_grace}
 
 	next() {
-		if (canSkip && (TIC.btnp(0) || TIC.btnp(1) || TIC.btnp(2) || TIC.btnp(3) || TIC.btnp(4) || TIC.btnp(5))) {
+		if (canSkip && (TIC.btnp(0) || TIC.btnp(1) || TIC.btnp(2) || TIC.btnp(3) || TIC.btnp(4) || TIC.btnp(5) || TIC.btnp(6) || TIC.btnp(7))) {
 			finish()
 			nextstate.reset()
 			return nextstate
@@ -788,7 +788,9 @@ class MainState is State {
 
 class DeathState is SkipState {
 	construct new() {
-		super(10)
+		super(60)
+        _player=Player.new(WIDTH/2,HEIGHT/2,0)
+        _player.health=1
     }
 
     reset() {
@@ -800,11 +802,17 @@ class DeathState is SkipState {
         return
     }
 
+    update() {
+        super.update()
+        _player.update(0,0)
+    }
+
 	draw() {
 		super.draw()
 		TIC.cls(COLOR_BG)
-		TIC.print("Totalled!", 40, 50)
-		TIC.print("Press any key to restart", 10, 10)
+        _player.draw(0,0)
+		TIC.print("Totalled!", 50, 50, 3)
+		TIC.print("Press any key to restart", 40, 100, 12)
     }
 }
 
@@ -926,6 +934,7 @@ class Smoke is GameObject {
 
 class Player is GameObject {
     health { _health }
+    health=(value){_health=value}
     stressed { _stressed }
 
     makeStressed(){ 
