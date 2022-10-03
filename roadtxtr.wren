@@ -29,6 +29,7 @@ var SFXGRASS=5
 var SFXRIGHT=6
 var SFXWRONG=7
 var SFXTXT=8
+var SFXEXPLODE=9
 var TXT_X=120
 var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
@@ -972,6 +973,7 @@ class Player is GameObject {
         _dy=0
         _maxHealth=10
         _health=_maxHealth
+        _damageshaketick=0
         _stressed=false
         _isOnGrass=false
         _smoke=[]
@@ -986,11 +988,9 @@ class Player is GameObject {
     }
 
     onHit(dmg){
-        TIC.sfx(SFXHIT)
-        _health=_health-dmg
-        if(_health<0){
-            _health=0
-        }
+        _health=(_health-dmg).max(0)
+        TIC.sfx(_health>0?SFXHIT:SFXEXPLODE)
+        _damageshaketick=10
     }
 
     update(camX,camY) {
@@ -1037,6 +1037,7 @@ class Player is GameObject {
                 _smoke.remove(smoke)
             }
         }
+        _damageshaketick=(_damageshaketick-1).max(0)
     }
 
     damageLevel{
@@ -1044,7 +1045,9 @@ class Player is GameObject {
     }
 
     draw(camX,camY) {
-        TIC.spr(352+damageLevel*48+_frame*4,x-camX,y-camY-8,0,1,0,0,4,3)
+        var dx=_damageshaketick>0?(RANDOM.int(2)-1)*_damageshaketick/5:0
+        var dy=_damageshaketick>0?(RANDOM.int(2)-1)*_damageshaketick/5:0
+        TIC.spr(352+damageLevel*48+_frame*4,x-camX+dx,y-camY-8+dy,0,1,0,0,4,3)
         _smoke.each {|smoke|
             smoke.draw()
         }
@@ -1890,6 +1893,7 @@ class Game is TIC{
 // 006:0800080018001800180038405840584058406800680068007800887088709870987098709870a870b870b870c870d870f870f870f870f870f870f870500000000000
 // 007:060006000600f600f600f6000670067006700670067016701670167016701670167016702670267036703670367046705670f670f670f670f670f6702f5000000000
 // 008:4800010001001100110021002100310041004100510051006100710081008100a100a100b100b100c100c100d100d100d100e100e100e100e100f100770000000000
+// 009:0407340364018400a40ea40d5406540464028400940fa40eb40d94058404840394019400a40eb40d94039401a40fb40ec40dc40ed40fe40ee40ef40db60000000000
 // 048:04002100410f610f910ee10ef10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10dc0b000000000
 // 049:64008400b400e400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400604000000000
 // 050:1400640fa40ef40df40cf40bf409f408f408f408f409f409f408f408f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400b00000000000
