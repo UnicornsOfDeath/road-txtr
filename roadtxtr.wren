@@ -1194,7 +1194,7 @@ class Phone {
         _y=HEIGHT
         var message1 = Message.new("Roomie", "Did you eat the\ncake I left in the\nfridge?","No way","Yes way")
         var message2 = Message.new("Babe", "Are you ready to\nmeet my family\ntonight?","Of course","Of course not")
-        var message3 = Message.new("Boss", "Can you please\nyour radio at a\nreasonable volume\nfrom 9 till 11","acceptable","unacceptable")
+        var message3 = Message.new("Boss", "Can you please\nlisten to your\nradio at a\nreasonable volume\nfrom 9 till 11","acceptable","unacceptable")
         var message4 = Message.new("Mum", "Hi, Mum here\nHave you forgotten\nyour grandma's\nbirthday?","No","Yes")
         var message5 = Message.new("Bestie", "We hitting the town\nthis weekend?\nIt has been a while.","Hell yes","Hell no")
         var message6 = Message.new("Bestie", "Did my girlfriend\nsend nudes to you?","Hell no","Hell yes")
@@ -1214,10 +1214,9 @@ class Phone {
         var message20 = Message.new("Bestie", "Hey, Birthday this\nweekend. You coming\nyeah?","Hell yes","Hell no")
 
 
-        /*_messages = [message1,message2,message3,message4,message5,message6,message7,message8,message9,
+        _messages = [message1,message2,message3,message4,message5,message6,message7,message8,message9,
         message10,message11,message12,message13,message14,message15,message16,message17,message18,message19,
-        message20]*/
-        _messages = [message3]
+        message20]
         RANDOM.shuffle(_messages)
     }
     update() {
