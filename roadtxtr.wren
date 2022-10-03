@@ -33,7 +33,7 @@ var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y
 var EVENT_TICK=600
-var WIN_X=6000
+var WIN_X=7200
 var STRESS_TICK=120
 var SHAKING_TICK=30
 var RANDOM=Random.new()
@@ -68,7 +68,7 @@ var FOOTPATH_TILES=[66,67,82,83,98,99,114,115]
 
 var GOOD_TEXT=0
 var BAD_TEXT=0
-var PEDESTRIANS_KILLED=0
+var PEDESTRIANS_KILLED=[]
 
 class ChunkyFont {
 
@@ -673,7 +673,7 @@ class MainState is State {
 		TIC.music(MUSGAME,-1,-1,true)
         GOOD_TEXT=0
         BAD_TEXT=0
-        PEDESTRIANS_KILLED=0
+        PEDESTRIANS_KILLED=[]
     }
 
     update() {
@@ -825,12 +825,18 @@ class DeathState is SkipState {
 class WinState is SkipState {
 	construct new() {
 		super(300)
+        _corpses=[]
     }
 
 	reset() {
 		super.reset()
         // TODO: win music
 		TIC.music(MUSTITLE,-1,-1,false)
+        var x=30
+        _corpses=PEDESTRIANS_KILLED.map{|sprite|
+            x=x+12
+            return Corpse.new(x,82+RANDOM.int(10),sprite)
+        }.toList
     }
 
 	finish() {
@@ -843,7 +849,8 @@ class WinState is SkipState {
 		TIC.print("You win!", 40, 30, 5)
 		TIC.print("Good texts: %(GOOD_TEXT)", 30, 60, 12)
 		TIC.print("Bad texts: %(BAD_TEXT)", 30, 70, 12)
-		TIC.print("Pedestrians killed: %(PEDESTRIANS_KILLED)", 30, 80, 12)
+		TIC.print("Pedestrians killed: %(PEDESTRIANS_KILLED.count)", 30, 80, 12)
+        _corpses.each{|corpse| corpse.draw()}
         if (canSkip){
             TIC.print("Press any key to reset", 10, HEIGHT-10, 12)
         }
@@ -975,7 +982,6 @@ class Player is GameObject {
         if(_health<0){
             _health=0
         }
-        PEDESTRIANS_KILLED = PEDESTRIANS_KILLED + 1
     }
 
     update(camX,camY) {
@@ -1067,6 +1073,7 @@ class FlyingObstacle is Obstacle {
         _tileHeight=tileHeight
         _flip=flip
     }
+    sprite{_sprite}
     ticks{_ticks}
 
     update(){
@@ -1109,6 +1116,11 @@ class Oldie is FlyingObstacle {
         _walkingSpeedY=walkDirY*__walkingSpeed
     }
 
+    onHit(){
+        super()
+        PEDESTRIANS_KILLED.add(sprite)
+    }
+
     update(){
         super()
         if(!isAlive){
@@ -1119,6 +1131,19 @@ class Oldie is FlyingObstacle {
             x=x+_walkingSpeedX
             y=y+_walkingSpeedY
         }
+    }
+}
+
+class Corpse is GameObject {
+    construct new(x,y,sprite){
+        super(x,y)
+        _sprite=sprite
+        _tileHeight=2
+        _flip=RANDOM.int(2)*2
+    }
+
+    draw(){
+        TIC.spr(_sprite,x,y,0,1,_flip,1,1,_tileHeight)
     }
 }
 
