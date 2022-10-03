@@ -44,7 +44,8 @@ var BTN_X=6
 var BTN_Y=7
 
 // TILE IDs
-var TILE_SIZE=16
+var TILE_SIZE=8
+var TILE_SIZE_2=16
 
 var ROAD_TILES=[0,1,2,3,32,33]
 var GRASS_TILES=[64]
@@ -645,9 +646,9 @@ class MainState is State {
         if(tt%10==0) {
             var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,GRASS_TILES)
             if(RANDOM.int(0,2)==0) {
-                _obstacles.add(PalmTree.new(coords[0],coords[1]-TILE_SIZE))
+                _obstacles.add(PalmTree.new(coords[0],coords[1]-TILE_SIZE_2))
             } else {
-                _obstacles.add(PineTree.new(coords[0],coords[1]-TILE_SIZE))
+                _obstacles.add(PineTree.new(coords[0],coords[1]-TILE_SIZE_2))
             }
         }
 
@@ -770,6 +771,10 @@ class MainState is State {
             } else {
                 TIC.print("Wrong Choice",2, HEIGHT-32, 0)
             }
+        }
+
+        if(_map.tileAtPixelIs(_player.x,_player.y,GRASS_TILES)) {
+            TIC.print("GRASS",0,0)
         }
     }
 }
@@ -1070,15 +1075,21 @@ class GameMap {
         }
     }
 
-    tileAt(x,y) {
+    tile2At(x,y) {
         return TIC.mget((x*2)%(MAP_W*2),y*2+1)
     }
 
+    tileAtPixelIs(x,y,options) {
+        var tileX=(x/TILE_SIZE).floor
+        var tileY=(y/TILE_SIZE).floor
+        return options.contains(TIC.mget(tileX%(MAP_W*2),tileY))
+    }
+
     findYforRandomTileWithIdsAtX(x,tileIDs) {
-        var tileX=(x/TILE_SIZE).floor+1
-        var tileOptions = (0...(HEIGHT/TILE_SIZE).floor).where {|i| tileIDs.contains(tileAt(tileX,i))}.toList
+        var tileX=(x/TILE_SIZE_2).floor+1
+        var tileOptions = (0...(HEIGHT/TILE_SIZE_2).floor).where {|i| tileIDs.contains(tile2At(tileX,i))}.toList
         var randomTileY = tileOptions[RANDOM.int(0,tileOptions.count)]
-        return [tileX*TILE_SIZE,randomTileY*TILE_SIZE+8]
+        return [tileX*TILE_SIZE_2,randomTileY*TILE_SIZE_2+TILE_SIZE]
     }
 }
 
