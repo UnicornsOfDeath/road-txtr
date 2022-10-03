@@ -713,7 +713,7 @@ class MainState is State {
         }
         // Remove obstacles off camera
         _obstacles.each {|obstacle|
-            if(obstacle.x<_x){
+            if(obstacle.x<_x-50){
                 _obstacles.remove(obstacle)
             }
         }
