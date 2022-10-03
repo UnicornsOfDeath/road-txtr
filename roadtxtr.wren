@@ -66,6 +66,10 @@ var ROAD_TILES=[0,1,2,3,32,33]
 var GRASS_TILES=[64,65,80,81]
 var FOOTPATH_TILES=[66,67,82,83,98,99,114,115]
 
+var GOOD_TEXT=0
+var BAD_TEXT=0
+var PEDESTRIANS_KILLED=0
+
 class ChunkyFont {
 
     static init_() {
@@ -667,6 +671,9 @@ class MainState is State {
         _currentTime=0
         _choiceMade=false
 		TIC.music(MUSGAME,-1,-1,true)
+        GOOD_TEXT=0
+        BAD_TEXT=0
+        PEDESTRIANS_KILLED=0
     }
 
     update() {
@@ -834,10 +841,9 @@ class WinState is SkipState {
 		super.draw()
 		TIC.cls(COLOR_BG)
 		TIC.print("You win!", 40, 30, 5)
-		TIC.print("Time: ???", 30, 60, 12)
-		TIC.print("Good texts: ???", 30, 70, 12)
-		TIC.print("Bad texts: ???", 30, 80, 12)
-		TIC.print("Pedestrians killed: ???", 30, 90, 12)
+		TIC.print("Good texts: %(GOOD_TEXT)", 30, 60, 12)
+		TIC.print("Bad texts: %(BAD_TEXT)", 30, 70, 12)
+		TIC.print("Pedestrians killed: %(PEDESTRIANS_KILLED)", 30, 80, 12)
         if (canSkip){
             TIC.print("Press any key to reset", 10, HEIGHT-10, 12)
         }
@@ -969,6 +975,7 @@ class Player is GameObject {
         if(_health<0){
             _health=0
         }
+        PEDESTRIANS_KILLED = PEDESTRIANS_KILLED + 1
     }
 
     update(camX,camY) {
@@ -1188,6 +1195,12 @@ class Phone {
                 _correctChoice = _correctOnZ == true
                 _choiceMade=true
                 _showPhone=false
+
+                if(_correctChoice) {
+                    GOOD_TEXT = GOOD_TEXT +1
+                } else {
+                    BAD_TEXT = BAD_TEXT + 1
+                }
                 
                 TIC.sfx(_correctChoice?SFXRIGHT:SFXWRONG)
             }
@@ -1195,6 +1208,12 @@ class Phone {
                 _correctChoice = _correctOnZ == false
                 _choiceMade=true
                 _showPhone=false
+
+                if(_correctChoice) {
+                    GOOD_TEXT = GOOD_TEXT +1
+                } else {
+                    BAD_TEXT = BAD_TEXT + 1
+                }
 
                 TIC.sfx(_correctChoice?SFXRIGHT:SFXWRONG)
             }
