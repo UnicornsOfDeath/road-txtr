@@ -1124,7 +1124,7 @@ class Oldie is FlyingObstacle {
 
 class Post is FlyingObstacle {
     construct new(x,y) {
-        super(x,y,292,false,4,false)
+        super(x,y,292+RANDOM.int(2),false,4,false)
     }
 }
 
