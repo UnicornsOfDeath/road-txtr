@@ -1151,8 +1151,8 @@ class PineTree is Obstacle {
 class Phone {
     construct new() {
         _showPhone = false
-        _rand=0
         _randOrder=0
+        _messageIndex=0
         _correctOnZ=true
         _correctChoice=false
         _choiceMade=false
@@ -1183,7 +1183,8 @@ class Phone {
         _messages = [message1,message2,message3,message4,message5,message6,message7,message8,message9,
         message10,message11,message12,message13,message14,message15,message16,message17,message18,message19,
         message20]
-    } 
+        RANDOM.shuffle(_messages)
+    }
     update() {
         if (_showPhone == true) {
             if (_y > TXT_Y) {
@@ -1232,19 +1233,25 @@ class Phone {
          _choiceMade = false
          _showPhone = true
          _messages = messages
-         _rand = RANDOM.int(_messages.count)
          _randOrder = RANDOM.int(2)
          _correctOnZ = _randOrder == 0
          _profilePic = RANDOM.sample(PEDESTRIAN_SPRITES)
+         _messageIndex = _messageIndex + 1
+        if (_messageIndex >= _messages.count) {
+            _messageIndex = 0
+        }
     }
 
     showPhone() {
         TIC.sfx(SFXTXT)
          _choiceMade = false
          _showPhone = true
-         _rand = RANDOM.int(_messages.count)
          _randOrder = RANDOM.int(2)
          _correctOnZ = _randOrder == 0
+         _messageIndex = _messageIndex + 1
+        if (_messageIndex >= _messages.count) {
+            _messageIndex = 0
+        }
     }
 
     isShowing() {
@@ -1280,27 +1287,27 @@ class Phone {
             TIC.rect(TXT_X+4,y+2,18,16,11)
             TIC.rectb(TXT_X+3,y+1,20,18,12)
             TIC.spr(_profilePic,TXT_X+5,y+2,0,2)
-            TIC.print(_messages[_rand].sender,TXT_X+26,y+4,0)
+            TIC.print(_messages[_messageIndex].sender,TXT_X+26,y+4,0)
             y=y+20
             TIC.rect(TXT_X+3,y+2,TXT_W-15,25,13)
-            TIC.print(_messages[_rand].message,TXT_X+5,y+4,0)
+            TIC.print(_messages[_messageIndex].message,TXT_X+5,y+4,0)
 
 
             y=y+40
             TIC.rectb(TXT_X+3,y+2,10,10,13)
             TIC.print("A",TXT_X+5,y+4,0)
             if (_correctOnZ == true) {
-                TIC.print(_messages[_rand].correct,TXT_X+15,y+4,0)
+                TIC.print(_messages[_messageIndex].correct,TXT_X+15,y+4,0)
             } else {
-                TIC.print(_messages[_rand].wrong,TXT_X+15,y+4,0)
+                TIC.print(_messages[_messageIndex].wrong,TXT_X+15,y+4,0)
             }
             y=y+15
             TIC.rectb(TXT_X+3,y+2,10,10,13)
             TIC.print("Z",TXT_X+5,y+4,0)
             if (_correctOnZ == true) {
-                TIC.print(_messages[_rand].wrong,TXT_X+15,y+4,0)
+                TIC.print(_messages[_messageIndex].wrong,TXT_X+15,y+4,0)
             } else {
-                TIC.print(_messages[_rand].correct,TXT_X+15,y+4,0)
+                TIC.print(_messages[_messageIndex].correct,TXT_X+15,y+4,0)
             }
        //}
     }
