@@ -34,7 +34,7 @@ var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y
 var EVENT_TICK=600
-var WIN_X=7200
+var WIN_X=10000
 var STRESS_TICK=120
 var SHAKING_TICK=30
 var RANDOM=Random.new()
@@ -656,6 +656,7 @@ class MainState is State {
         _currentTime=0
         _progressbar = ProgressBar.new()
 		_winstate=this
+        _deathticks=0
     }
     winstate { _winstate }
     winstate=(value) {
@@ -671,6 +672,7 @@ class MainState is State {
         _showText=false
         _currentTime=0
         _choiceMade=false
+        _deathticks=0
 		TIC.music(MUSGAME,-1,-1,true)
         GOOD_TEXT=0
         BAD_TEXT=0
@@ -679,6 +681,14 @@ class MainState is State {
 
     update() {
         super.update()
+
+        if (_deathticks>0) {
+            _deathticks=_deathticks-1
+            return
+        } else if (_player.health<=0){
+            TIC.music()
+            _deathticks=60
+        }
 
         _x=_x+_speed
         _player.update(_x,_y)
@@ -758,8 +768,7 @@ class MainState is State {
             winstate.reset()
             return winstate
         }
-        // TODO: stay on this state a bit and show the car exploding etc
-		if (_player.health==0) {
+		if (_deathticks==1) {
 			finish()
 			nextstate.reset()
 			return nextstate
@@ -1031,7 +1040,7 @@ class Player is GameObject {
     }
 
     damageLevel{
-        return ((_maxHealth-health)*3/_maxHealth).floor
+        return ((_maxHealth-health)*3/_maxHealth).floor.min(2)
     }
 
     draw(camX,camY) {
