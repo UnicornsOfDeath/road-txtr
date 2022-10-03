@@ -1156,14 +1156,14 @@ class Phone {
                 _choiceMade=true
                 _showPhone=false
                 
-                TIC.sfx(SFXNEXT)
+                TIC.sfx(_correctChoice?SFXRIGHT:SFXWRONG)
             }
             if(TIC.btnp(BTN_B)){
                 _correctChoice = _correctOnZ == false
                 _choiceMade=true
                 _showPhone=false
 
-                TIC.sfx(SFXNEXT)
+                TIC.sfx(_correctChoice?SFXRIGHT:SFXWRONG)
             }
         }
     }
