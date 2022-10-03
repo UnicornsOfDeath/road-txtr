@@ -961,13 +961,16 @@ class Player is GameObject {
             _dy=(_dy+ddy*0.5).clamp(-1,1)
         }
         _dy=(_dy-_dy.sign*0.15).clamp(-1,1)
+        if(_dy.abs<0.1){
+            _dy=0
+        }
         y=(y+_dy*_steeringSpeed).clamp(8,HEIGHT-16)
         if(_stressTick >= STRESS_TICK) {
            _stressTick = 0
            _stressed = false 
         }
         _ticks=_ticks+1
-        if(_ticks==15){
+        if(_ticks>=15-damageLevel*4){
             _ticks=0
             _frame=1-_frame
         }
