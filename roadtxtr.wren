@@ -21,7 +21,6 @@ var MUSTEMPO=100
 var MUSSPD=3
 var FPS=60
 var MUSBEATTICKS=FPS*60/MUSTEMPO*MUSSPD/6
-var PALETTE_MAP=0x3FF0
 var SFXNEXT=1
 var SFXHIT=3
 var SFXSCREAM=4
@@ -34,6 +33,10 @@ var EVENT_TICK=200
 var WIN_X=2000
 var STRESS_TICK=100
 var RANDOM=Random.new()
+
+// VRAM ADDRESSES
+var MOUSE_CURSOR=0x3FFB
+var PALETTE_MAP=0x3FF0
 
 // BUTTONS
 
@@ -676,7 +679,6 @@ class MainState is State {
         if(tt%60==0) {
             var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,ROAD_TILES)
             _obstacles.add(Oldie.new(coords[0],coords[1]))
-            TIC.trace(coords[0])
         }
 
         if(tt%10==0) {
@@ -1194,6 +1196,7 @@ class Game is TIC{
 	
 	TIC(){
         TIC.cls(1)
+        TIC.poke(MOUSE_CURSOR,271)
 
         _state.update()
         _state.draw()
