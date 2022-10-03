@@ -1248,13 +1248,16 @@ class GameMap {
 
     update(x) {
         var oldX=_x
-        _x = x%(WIDTH*2)
+        _x = x%(WIDTH*3)
         // Switch map by template if we've crossed a boundary
         if(_x<oldX){
-            // 1->0
-            replace(1)
+            // 2->0
+            replace(2)
         }else if(_x>=WIDTH&&oldX<WIDTH){
             // 0->1
+            replace(0)
+        }else if(_x>=WIDTH*2&&oldX<WIDTH*2){
+            // 1->2
             replace(0)
         }
         // Ramp up difficulty as we get closer to the end
@@ -1267,20 +1270,20 @@ class GameMap {
     }
 
     draw() {
-        TIC.map(0, 0, MAP_W*2, MAP_H, -_x, 0)
-        if(_x>=WIDTH){
-            TIC.map(0, 0, MAP_W, MAP_H, -_x+WIDTH*2, 0)
+        TIC.map(0, 0, MAP_W*3, MAP_H, -_x, 0)
+        if(_x>=WIDTH*2){
+            TIC.map(0, 0, MAP_W, MAP_H, -_x+WIDTH*3, 0)
         }
     }
 
     tile2At(x,y) {
-        return TIC.mget((x*2)%(MAP_W*2),y*2+1)
+        return TIC.mget((x*2)%(MAP_W*3),y*2+1)
     }
 
     tileAtPixelIs(x,y,options) {
         var tileX=(x/TILE_SIZE).floor
         var tileY=(y/TILE_SIZE).floor
-        return options.contains(TIC.mget(tileX%(MAP_W*2),tileY))
+        return options.contains(TIC.mget(tileX%(MAP_W*3),tileY))
     }
 
     findYforRandomTileWithIdsAtX(x,tileIDs) {
