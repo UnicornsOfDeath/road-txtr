@@ -12,7 +12,7 @@ var WIDTH=240
 var HEIGHT=136
 var MAP_W=30
 var MAP_H=17
-var COLOR_BG=0
+var COLOR_BG=8
 var MUSSPLASH=0
 var MUSGAME=1
 var MUSTITLE=2
@@ -30,10 +30,10 @@ var SFXWRONG=7
 var TXT_X=120
 var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
-var TXT_H=HEIGHT-TXT_Y-10
+var TXT_H=HEIGHT-TXT_Y
 var EVENT_TICK=600
 var WIN_X=10000
-var STRESS_TICK=120
+var STRESS_TICK=60
 var SHAKING_TICK=30
 var RANDOM=Random.new()
 var DEBUG_HITBOX=true
@@ -392,7 +392,7 @@ class ChunkyFont {
 				var letter=row[i]
 				if (letter!=" ") {
 					hasletter=true
-					TIC.spr(__SYM_MAP[letter]+128,x,y)
+					TIC.spr(__SYM_MAP[letter]+128,x,y,0)
                 }
 				if (hasletter) {
 					rowwidth=rowwidth+1
@@ -578,6 +578,8 @@ class TitleState is State {
 	construct new() {
         _player=Player.new(10,40,0)
         _nextStateCounter=0
+        _phone=Phone.new()
+        _phone.showPhone()
     }
 
     isSwitchingToNextState{_nextStateCounter>0}
@@ -621,6 +623,7 @@ class TitleState is State {
         TIC.cls(COLOR_BG)
         TIC.print(">>> START GAME",30,100,12+(tt/20)%2)
         _player.draw(0,0)
+        _phone.draw()
         var cf=ChunkyFont.new(50,20)
         cf.s("^43ROAD\n^56TEXTER")
     }
@@ -1203,6 +1206,13 @@ class Phone {
 
     draw() {
         if (_showPhone){
+            var R=8
+            var PHONE_C=0
+            TIC.circ(TXT_X,TXT_Y,R,PHONE_C)
+            TIC.circ(TXT_X+TXT_W,TXT_Y,R,PHONE_C)
+            TIC.rect(TXT_X,TXT_Y-R,TXT_W,R,PHONE_C)
+            TIC.rect(TXT_X-R,TXT_Y,R,TXT_H,PHONE_C)
+            TIC.rect(TXT_X+TXT_W,TXT_Y,R+1,TXT_H,PHONE_C)
             var y=TXT_Y
             TIC.rect(TXT_X,y,TXT_W,TXT_H,12)
             TIC.rect(TXT_X,y,TXT_W,20,13)
