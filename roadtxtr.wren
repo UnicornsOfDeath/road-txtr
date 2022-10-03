@@ -835,7 +835,7 @@ class WinState is SkipState {
         var x=30
         _corpses=PEDESTRIANS_KILLED.map{|sprite|
             x=x+12
-            return Corpse.new(x,82+RANDOM.int(10),sprite)
+            return Corpse.new(x,87+RANDOM.int(10),sprite)
         }.toList
     }
 
