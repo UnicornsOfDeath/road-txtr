@@ -1182,6 +1182,15 @@ class Phone {
         _correctChoice=false
         _choiceMade=false
         _profilePic=PEDESTRIAN_SPRITES[0]
+        var profiles=List.new().addAll(PEDESTRIAN_SPRITES)
+        RANDOM.shuffle(profiles)
+        _profilePicMap={
+            "Roomie":profiles[0],
+            "Babe":profiles[1],
+            "Boss":profiles[2],
+            "Mum":profiles[3],
+            "Bestie":profiles[4]
+        }
         _y=HEIGHT
         var message1 = Message.new("Roomie", "Did you eat the\ncake I left in the\nfridge?","No way","Yes way")
         var message2 = Message.new("Babe", "Are you ready to\nmeet my family\ntonight?","Of course","Of course not")
@@ -1277,6 +1286,10 @@ class Phone {
         if (_messageIndex >= _messages.count) {
             _messageIndex = 0
         }
+         _profilePic = _profilePicMap[_messages[_messageIndex].sender]
+         if(_profilePic==null) {
+            _profilePic = RANDOM.sample(PEDESTRIAN_SPRITES)
+         }
     }
 
     isShowing() {
