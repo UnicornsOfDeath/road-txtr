@@ -601,7 +601,7 @@ class TitleState is State {
     update(){
         super.update()
         if(!isSwitchingToNextState){
-            _player.update()
+            _player.update(0,0)
             if(_player.y>95){
                 finish()
             }
@@ -655,7 +655,7 @@ class MainState is State {
         super.update()
 
         _x=_x+_speed
-        _player.update()
+        _player.update(_x,_y)
         _phone.update()
         _player.isOnGrass =_map.tileAtPixelIs(_player.x+24,_player.y+8,GRASS_TILES)
 
@@ -887,6 +887,26 @@ class GameObject {
     }
 }
 
+class Smoke is GameObject {
+    construct new(x,y) {
+        super(x+RANDOM.int(20),y+RANDOM.int(10)-5,Rect.new(0,0,0,0))
+        _ticks=0
+    }
+
+    frame{(_ticks/4).floor}
+
+    update() {
+        super.update()
+        y=y-1
+        x=x-0.2*_ticks
+        _ticks=_ticks+1
+    }
+
+    draw() {
+        TIC.spr(496+frame,x,y,0,1)
+    }
+}
+
 class Player is GameObject {
     health { _health }
     stressed { _stressed }
@@ -903,9 +923,11 @@ class Player is GameObject {
         _steeringSpeed=1.5
         _stressTick=0
         _dy=0
-        _health=10
+        _maxHealth=10
+        _health=_maxHealth
         _stressed=false
         _isOnGrass=false
+        _smoke=[]
     }
     isOnGrass=(value){
         if(value&&!_isOnGrass){
@@ -924,8 +946,8 @@ class Player is GameObject {
         }
     }
 
-    update() {
-        super()
+    update(camX,camY) {
+        super.update()
         x=x+_speed
         if(_stressed == true) {
             _stressTick=_stressTick + 1
@@ -949,10 +971,33 @@ class Player is GameObject {
             _ticks=0
             _frame=1-_frame
         }
+        if(damageLevel>0){
+            if(RANDOM.int(5)==0){
+                _smoke.add(Smoke.new(x-camX,y-camY))
+            }
+            if(damageLevel>1){
+                if(RANDOM.int(5)==0){
+                    _smoke.add(Smoke.new(x-camX,y-camY))
+                }
+            }
+        }
+        _smoke.each {|smoke|
+            smoke.update()
+            if(smoke.frame>4){
+                _smoke.remove(smoke)
+            }
+        }
+    }
+
+    damageLevel{
+        return ((_maxHealth-health)*3/_maxHealth).floor
     }
 
     draw(camX,camY) {
-        TIC.spr(352+_frame*4,x-camX,y-camY-8,0,1,0,0,4,3)
+        TIC.spr(352+damageLevel*48+_frame*4,x-camX,y-camY-8,0,1,0,0,4,3)
+        _smoke.each {|smoke|
+            smoke.draw()
+        }
     }
 }
 
@@ -1448,6 +1493,58 @@ class Game is TIC{
 // 133:f212f9bac212cccc221222222212fff2ffff1111fedf2222ddff1111ffffffff
 // 134:a99f1221cccc121222221122222212221111ffff2222fdcf1111ffedffffffff
 // 135:1222221f2111111f2222221f2222221cffff111cfedf2214ddff1114fffffff0
+// 144:000fffff00f1222200f121110f9122220f912222f9912222f9a12222f9f12222
+// 145:ffffffff22222222111222212221111122222222211122222222221122111112
+// 146:fff00000222ff0001112ff0022222ff022222f9f12222f9f11122fcc2222ffac
+// 147:000000000000000000000000000000000000000000000000f0000000fffff000
+// 148:00000000000fffff00f1222200f121110f9122220f912222f9912222f9a12222
+// 149:00000000ffffffff222222221112222122211111222222222111222222222211
+// 150:00000000fff00000222ff0001112ff0022222ff022222f9f12222f9f11122fcc
+// 151:00000000000000000000000000000000000000000000000000000000f0000000
+// 160:fff12111fff12222fbf11111fb911222fa912ffff912f999f912f9aaf12f9ba9
+// 161:11122211222222221111111122221222ff212aff9f212ffff212aafff212aaaf
+// 162:111fffab22ff11ccff1111ac2221119affaf221afffaa221fffff121ffcf1221
+// 163:1222ff0012222f00122211f0121112f012222210122222101221111f1222211f
+// 164:f9f12222fff12111fff12222fbf11111fb911222fa912ffff912f999f912f9aa
+// 165:2211111211122211222222221111111122221222ff212aff9f212ffff212aaff
+// 166:2222ffac111fffab22ff11ccff1111ac2221119affaf221afffaa221fffff121
+// 167:fffff0001222ff0012222f00122211f0121112f012222210122222101221111f
+// 176:f12cccccf2222222fffff2220f111fff00f2ffdd00fffdcf0000ffed000000ff
+// 177:c212cccc221222222212fff2fff11111ddff2221fedf1111ddffffffff000000
+// 178:cccc1212221111121112111222211fff1221ffdd1111fdcfffffffed000000ff
+// 179:2111111f222222f0222222f0fff11ff0ddff2f00fedfff00ddffff00ff000000
+// 180:f12f9ba9f12cccccf2222222fffff2220f111fff00f21dcf00ffffed000000ff
+// 181:f212aaafc212cccc221222222212fff2fff11111fedf1111ddffffffff000000
+// 182:ffcf1221cccc1212221111121112111222211fff1111fdcfffffffdd000000ff
+// 183:1222211f2111111f222222f0222222f0fff11ff0fedf2f00ddffff00ff000000
+// 192:000fffff00f1222200f121110f1122220ff12222f1f11222f1f11122f1fff112
+// 193:ffff0000222ff0001112f0002221f000222221ff211111212221221122111111
+// 194:00000000000000000000000000000000fffffffff1111f1ff1111f1cf111ff1c
+// 195:000000000000000000000000000000000000000000000000f0000000fff00000
+// 196:00000000000fffff00f1222200f121110f1122220ff12222f1f11222f1f11122
+// 197:00000000ffff0000222ff0001112f0002221f000222221ff2111112122212211
+// 198:0000000000000000000000000000000000000000fffffffff1111f1ff1111f1c
+// 199:00000000000000000000000000000000000000000000000000000000f0000000
+// 208:f1f1f111f9f1ff11f9f1ff11f9fff222f9112ffff912f9cff912f9cff12f9bcc
+// 209:111211111122211f1111111f2222ff1fff21ff1fff21f11ff21ff11ff21ff11f
+// 210:fffffffbf2ff111cff11111cff21111affff221afffff221fffff121ffff1221
+// 211:122f000012222f00122111f01211ddf01211dd10121fdd1012ddd00012fff000
+// 212:f1fff112f1f1f111f9f1ff11f9f1ff11f9fff222f9112ffff912f9cff912f9cf
+// 213:22111111111211111122211f1111111f2222ff1fff21ff1fff21f11ff21ff11f
+// 214:f111ff1cfffffffbf2ff111cff11111cff21111affff221afffff221fffff121
+// 215:fff00000122f000012222f00122111f01211ddf01211dd10121fdd1012ddd000
+// 224:f12cccccf2222222fffff2220f111ffe00f2ffdd00ffffcf0000fffd000000ff
+// 225:c21ff1ff221f11ff221ff111dff1fffffdfffffffedf1111ddffffffff000000
+// 226:ffff1212ffff1112111f1112fff11ffffff1ffdd1111fdcfffffffdd000000ff
+// 227:21ddd100222222f0222222f0eef11ff0ddff2f00fedfff00ddffff00ff000000
+// 228:f12f9bccf12cccccf2222222fffff2220f111fff00f2fdcf00fffeee000000ff
+// 229:f21ff11fc21ff1ff221f11ff221ff111fff1fffffedfffffddff1111ffffffff
+// 230:ffff1221ffff1212ffff1112111f1112fff11ffffff1fdcf1111ffedffffffee
+// 231:12fff00021ddd100222222f0222222f0fff11ff0feff2f00dfffff00ffffff00
+// 240:0000000000000000000000000000000000d000000000d0000000000000000000
+// 241:00000000000000000000000000e000000ed0000000e0d00000000e0000000000
+// 242:000000000000000000ee00000ee000000ed0e00000edde00000ede000000e000
+// 243:0000000000fe00000feef000fee0dff0fedfefe00feddef00ffede00000fe000
 // 255:0000000000000000122221002aa2aa00222222241cd22cd10de11de000000000
 // </SPRITES>
 
