@@ -1141,6 +1141,7 @@ class Phone {
         _correctOnZ=true
         _correctChoice=false
         _choiceMade=false
+        _profilePic=PEDESTRIAN_SPRITES[0]
         _y=HEIGHT
         var message1 = Message.new("Roomie", "Did you eat the\ncake I left in the\nfridge?","No way","Yes way")
         var message2 = Message.new("Babe", "Are you ready to\nmeet my family\ntonight?","Of course","Of course not")
@@ -1207,6 +1208,7 @@ class Phone {
          _rand = RANDOM.int(_messages.count)
          _randOrder = RANDOM.int(2)
          _correctOnZ = _randOrder == 0
+         _profilePic = RANDOM.sample(PEDESTRIAN_SPRITES)
     }
 
     showPhone() {
@@ -1247,7 +1249,10 @@ class Phone {
             var y=_y
             TIC.rect(TXT_X,y,TXT_W,TXT_H,12)
             TIC.rect(TXT_X,y,TXT_W,20,13)
-            TIC.print(_messages[_rand].sender,TXT_X+4,y+4,0)
+            TIC.rect(TXT_X+4,y+2,18,16,11)
+            TIC.rectb(TXT_X+3,y+1,20,18,12)
+            TIC.spr(_profilePic,TXT_X+5,y+2,0,2)
+            TIC.print(_messages[_rand].sender,TXT_X+24,y+4,0)
             y=y+20
             TIC.rect(TXT_X+3,y+2,TXT_W-15,25,13)
             TIC.print(_messages[_rand].message,TXT_X+5,y+4,0)
