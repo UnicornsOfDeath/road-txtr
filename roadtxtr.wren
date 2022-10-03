@@ -579,24 +579,55 @@ class SplashState is SkipState {
     }
 }
 
-class TitleState is SkipState {
+class TitleState is State {
 	construct new() {
-		super(10)
+        _player=Player.new(10,40,0)
+        _nextStateCounter=0
     }
+
+    isSwitchingToNextState{_nextStateCounter>0}
 
 	reset() {
 		super.reset()
 		TIC.music(MUSTITLE,-1,-1,false)
+        _player=Player.new(10,40,0)
+        _nextStateCounter=0
     }
 
 	finish() {
-        return
+		TIC.sfx(SFXNEXT)
+        _nextStateCounter=40
+        TIC.music() // stop
     }
 
-	draw() {
-		super.draw()
-		TIC.cls(COLOR_BG)
-		TIC.print("This is the title screen!\nPress any key to go back to the\nsplash screen", 10, 10)
+    next() {
+        if(_nextStateCounter==1){
+			nextstate.reset()
+			return nextstate
+        }
+		return super()
+    }
+
+    update(){
+        super.update()
+        if(!isSwitchingToNextState){
+            _player.update()
+            if(_player.y>95){
+                finish()
+            }
+        }
+        if(isSwitchingToNextState){
+            _nextStateCounter=_nextStateCounter-1
+        }
+    }
+
+    draw() {
+        super.draw()
+        TIC.cls(COLOR_BG)
+        TIC.print(">>> START GAME",30,100,12+(tt/20)%2)
+        _player.draw(0,0)
+        var cf=ChunkyFont.new(50,20)
+        cf.s("^43ROAD\n^56TEXTER")
     }
 }
 
