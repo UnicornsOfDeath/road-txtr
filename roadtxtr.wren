@@ -33,6 +33,7 @@ var EVENT_TICK=200
 var WIN_X=2000
 var STRESS_TICK=100
 var RANDOM=Random.new()
+var DEBUG_HITBOX=true
 
 // VRAM ADDRESSES
 var MOUSE_CURSOR=0x3FFB
@@ -661,6 +662,9 @@ class MainState is State {
         if(tt%60==0) {
             var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,ROAD_TILES)
             _obstacles.add(Oldie.new(coords[0],coords[1]))
+            coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH,ROAD_TILES)
+            _obstacles.add(Post.new(coords[0],coords[1]))
+            TIC.trace(coords[0])
         }
 
         if(tt%10==0) {
@@ -758,7 +762,15 @@ class MainState is State {
 
     draw() {
         _map.draw()
-        _obstacles.each {|obstacle| obstacle.draw(_x,_y) }
+        _obstacles.each {|obstacle|
+            if(DEBUG_HITBOX){
+                TIC.rectb(obstacle.x-_x+obstacle.hitbox.x,obstacle.y+obstacle.hitbox.y,obstacle.hitbox.width,obstacle.hitbox.height,5)
+            }
+            obstacle.draw(_x,_y)
+        }
+        if(DEBUG_HITBOX){
+            TIC.rectb(_player.x-_x+_player.hitbox.x,_player.y+_player.hitbox.y,_player.hitbox.width,_player.hitbox.height,5)
+        }
         _player.draw(_x,_y)
         _progressbar.draw(_x)
 
@@ -1008,22 +1020,24 @@ class Obstacle is GameObject {
     }
 }
 
-class Oldie is Obstacle {
-    construct new(x,y) {
-        super(x,y,1,Rect.new(4,3,7,10))
+class FlyingObstacle is Obstacle {
+    // Obstacle that flies away when hit
+    construct new(x,y,sprite,animated,tileHeight) {
+        super(x,y,1,Rect.new(4,3,7,7))
         _ticks=0
         _dy=0
         _dx=0
+        _sprite=sprite
+        _animated=animated
+        _tileHeight=tileHeight
     }
+    ticks{_ticks}
 
     update(){
         super()
         _ticks=_ticks+1
         if(!isAlive){
             _dy=_dy+0.15
-            if(_ticks==10){
-                TIC.sfx(SFXSCREAM)
-            }
         }
         y=y+_dy
         x=x+_dx
@@ -1037,14 +1051,37 @@ class Oldie is Obstacle {
     }
 
     draw(camX,camY) {
+        var drawX=x-camX+4
+        var drawY=y-camY-_tileHeight*8+8
         if(isAlive){
-            var frame=(_ticks/30).floor%2
-            TIC.spr(260+frame,x-camX,y-camY,0,1,0,0,1,2)
+            var frame=_animated ? (_ticks/30).floor%2 : 0
+            TIC.spr(_sprite+frame,drawX,drawY,0,1,0,0,1,_tileHeight)
         }else{
-            var frame=(_ticks/5).floor%2
-            var r=((_ticks/10).floor%4)*90
-            TIC.spr(260+frame,x-camX,y-camY,0,1,0,r,1,2)
+            var frame=_animated ? (_ticks/5).floor%2 : 0
+            var r=_animated ? ((_ticks/10).floor%4)*90 : 0
+            TIC.spr(_sprite+frame,drawX,drawY,0,1,0,r,1,_tileHeight)
         }
+    }
+}
+
+class Oldie is FlyingObstacle {
+    construct new(x,y) {
+        super(x,y,260,true,2)
+    }
+
+    update(){
+        super()
+        if(!isAlive){
+            if(ticks==10){
+                TIC.sfx(SFXSCREAM)
+            }
+        }
+    }
+}
+
+class Post is FlyingObstacle {
+    construct new(x,y) {
+        super(x,y,292,false,4)
     }
 }
 
@@ -1288,18 +1325,22 @@ class Game is TIC{
 // 032:0000000000000000000000000000000000000005000000560000000600000006
 // 033:0000000000000000000000000000000050000000670000006700000067000560
 // 035:0000000000000000000000000000000000000000000000000700000077000000
+// 036:000ff00000fa9f0000fa9f0000ffff000faaa9f00faaa9f00faaa9f00faaa9f0
 // 048:5555600666666667077666660007777700000666000056660056666605666667
 // 049:6770566667756670777667007757700075666000676666007176670011066770
 // 050:0000000700000076000000660000006600007766000067660000f66700000607
 // 051:660000006770000077770000607f0000777700007677f0006667f00066677000
+// 052:0fa999f00ffffff00fccccf000ffff0000fa9f0000fa9f0000fa9f0000fa9f00
 // 064:5666677266677032677000320700003300000322000003210000032100000321
 // 065:2107677011007770110077002000070010000000100000001000000010000000
 // 066:0000777600077677000766770007666707676666077667770fff66ffff066606
 // 067:6677f7001667777066677f70667ffff0666ff0f0777f77f067777f7f677777ff
+// 068:00fa9f0000fa9f0000fa9f0000fa9f0000fa9f0000fa9f0000fa9f0000fa9f00
 // 080:0000033200003221000032110000321100003211000001110000000000000000
 // 081:1000000010000000100000001000000010000000000000000000000000000000
 // 082:0ff7767700ff77770000ffff0000000100000001000000110000000100000000
 // 083:7ff7fff0777ffff0fffff0001100000011000000111000001100000000000000
+// 084:00fa9f0000fa9f000fa999f00faffff00faa99f00faaa9f00faa99f000ffff00
 // 096:000fffff00f1222200f121110f9122220f912222f9912222f9a12222f9a12222
 // 097:ffffffff22222222111111112222222222222222222222222222222222222222
 // 098:fffff00022222f0011122f0022222ff022222f9f22222f9f22222f9a22222faa
