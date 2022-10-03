@@ -1280,7 +1280,7 @@ class Phone {
             TIC.rect(TXT_X+4,y+2,18,16,11)
             TIC.rectb(TXT_X+3,y+1,20,18,12)
             TIC.spr(_profilePic,TXT_X+5,y+2,0,2)
-            TIC.print(_messages[_rand].sender,TXT_X+24,y+4,0)
+            TIC.print(_messages[_rand].sender,TXT_X+26,y+4,0)
             y=y+20
             TIC.rect(TXT_X+3,y+2,TXT_W-15,25,13)
             TIC.print(_messages[_rand].message,TXT_X+5,y+4,0)
