@@ -1114,6 +1114,9 @@ class Oldie is FlyingObstacle {
             if(ticks==10){
                 TIC.sfx(SFXSCREAM)
             }
+        } else {
+            x=x+_walkingSpeedX
+            y=y+_walkingSpeedY
         }
     }
 }
@@ -1254,7 +1257,7 @@ class Game is TIC{
 	
 	TIC(){
         TIC.cls(1)
-        TIC.poke(MOUSE_CURSOR,271)
+        TIC.poke(MOUSE_CURSOR,431)
 
         _state.update()
         _state.draw()
