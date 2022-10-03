@@ -31,9 +31,9 @@ var TXT_X=120
 var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y-10
-var EVENT_TICK=600
+var EVENT_TICK=200
 var WIN_X=2000
-var STRESS_TICK=120
+var STRESS_TICK=100
 var RANDOM=Random.new()
 var DEBUG_HITBOX=true
 
@@ -627,37 +627,10 @@ class MainState is State {
         _y=0
         _speed=2
         _player=Player.new(10,60,_speed)
+        _phone=Phone.new()
         _obstacles=[]
         _map=GameMap.new()
         _currentTime=0
-        _correctOnZ=true
-        _correctChoice=false
-        _choiceMade=false
-        var message1 = Message.new("Roomie", "Did you eat the\ncake I left in the\nfridge?","No way","Yes way")
-        var message2 = Message.new("Babe", "Are you ready to\nmeet my family\ntonight?","Of course","Of course not")
-        var message3 = Message.new("Boss", "Can you please stop\nsaying smells like\nvagina when you\npast my office","acceptable","unacceptable")
-        var message4 = Message.new("Mum", "Hi, Mum here\nHave you forgotten\nyour grandma's\nbirthday?","No","Yes")
-        var message5 = Message.new("Bestie", "We hitting the town\nthis weekend?\nIt has been a while.","Hell yes","Hell no")
-        var message6 = Message.new("Bestie", "Did my girlfriend\nsend nudes to you?","Hell no","Hell yes")
-        var message7 = Message.new("Roomie", "Can you please\nstop using my\ntowel after you\nhave a shower?","Yes way","No way")
-        var message8 = Message.new("Babe", "Do you think I\nlook I look\nfat in my new\ndress?","Of course not","Of course")
-        var message9 = Message.new("Bestie", "Impression yoda my\nlike you do?","Hell yes","Hell no")
-        var message10 = Message.new("Boss", "Hawaiian shirt day\nwill be on every\nfriday from now\non ","unacceptable","acceptable")
-        var message11 = Message.new("Mum", "Hi, Mum here\nWill you be joining\nus for Christmas\nlunch?","Yes","No")
-        var message12 = Message.new("Mum", "Hi, Mum here\nI think I put a\nvirus on my\ncomputer. Can you\nfix it now?","Yes","No")
-        var message13 = Message.new("Bestie", "When I move\noverseas are you\ngoing to forget me?","Hell no","Hell yes")
-        var message14 = Message.new("Boss", "I'm going to\nneed those TPS\nreports ASAP ","acceptable","unacceptable")
-        var message15 = Message.new("Babe", "Just watching\nfarmer wants a wife\nand do you think\nJamie is hotter\nthan me?","Of course not","Of course")
-        var message16 = Message.new("Babe", "Was thinking of\nyou today. Did you\nthink of me?","Of course","Of course not")
-        var message17 = Message.new("Mum", "Hi, Mum here\nDo you think it\nwould be too much\n effort call me\nsometime?","No","Yes")
-        var message18 = Message.new("Roomie", "Can you please\nlearn to flush\nthe toilet. Sick\nof surprises","Yes way","No way")
-        var message19 = Message.new("Roomie", "Did you set up\na camera in my\nbedroom to spy\non me?","No way","Yes way")
-        var message20 = Message.new("Bestie", "Hey, Birthday this\nweekend. You coming\nyeah?","Hell yes","Hell no")
-
-
-        _messages = [message1,message2,message3,message4,message5,message6,message7,message8,message9,
-        message10,message11,message12,message13,message14,message15,message16,message17,message18,message19,
-        message20]
         _progressbar = ProgressBar.new()
 		_winstate=this
     }
@@ -670,6 +643,7 @@ class MainState is State {
         super.reset()
         _x=0
         _player=Player.new(10,60,_speed)
+        _phone=Phone.new()
         _obstacles=[]
         _showText=false
         _currentTime=0
@@ -682,6 +656,7 @@ class MainState is State {
 
         _x=_x+_speed
         _player.update()
+        _phone.update()
         _player.isOnGrass =_map.tileAtPixelIs(_player.x+24,_player.y+8,GRASS_TILES)
 
         if(tt%60==0) {
@@ -734,48 +709,13 @@ class MainState is State {
             }
         }
 
-        if (_showText == true) {
-            if(TIC.btnp(BTN_A)){
-                if (_correctOnZ == true ){
-                    _correctChoice=true
-                } else {
-                    _correctChoice=false
-                }
-                _choiceMade=true
-                _showText=!_showText
-                TIC.sfx(SFXNEXT)
-            }
-            if(TIC.btnp(BTN_B)){
-                if (_correctOnZ == false ){
-                    _correctChoice=true
-                } else {
-                    _correctChoice=false
-                }
-                _choiceMade=true
-                _showText=!_showText
-                TIC.sfx(SFXNEXT)
-            }
-            if (_choiceMade == true && _correctChoice == false) {
-                wrongAnswer()
-            }
-        }
-
         _currentTime = _currentTime + 1
         if(_currentTime == EVENT_TICK) {
-           _rand = RANDOM.int(_messages.count)
-           _randOrder = RANDOM.int(2)
-           if (_randOrder == 0 ) {
-            _correctOnZ = true
-           } else {
-            _correctOnZ = false
-           }
-           // If message is already shown, stress
-           if (_showText == true) {
-            wrongAnswer()
-           }
-           _showText=true
-           _choiceMade=false
-           _currentTime = 0
+            if(_phone.isShowing()) {
+                wrongAnswer()
+            }
+            _phone.showPhone()
+            _currentTime = 0
         }
 
         // Skip to death screen with B button
@@ -784,6 +724,9 @@ class MainState is State {
         }
 
         _progressbar.update()
+        if (_phone.isWrong() == true) {
+            wrongAnswer()
+        }
     }
 
     next() {
@@ -815,44 +758,10 @@ class MainState is State {
         }
         _player.draw(_x,_y)
         _progressbar.draw(_x)
-
-        if (_showText){
-            var y=TXT_Y
-            TIC.rect(TXT_X,y,TXT_W,TXT_H,12)
-            TIC.rect(TXT_X,y,TXT_W,20,13)
-            TIC.print(_messages[_rand].sender,TXT_X+4,y+4,0)
-            y=y+20
-            TIC.rect(TXT_X+3,y+2,TXT_W-35,25,13)
-            TIC.print(_messages[_rand].message,TXT_X+5,y+4,0)
-
-
-            y=y+40
-            TIC.rectb(TXT_X+3,y+2,10,10,13)
-            TIC.print("Z",TXT_X+5,y+4,5)
-            if (_correctOnZ == true) {
-                TIC.print(_messages[_rand].correct,TXT_X+15,y+4,0)
-            } else {
-                TIC.print(_messages[_rand].wrong,TXT_X+15,y+4,0)
-            }
-            y=y+15
-            TIC.rectb(TXT_X+3,y+2,10,10,13)
-            TIC.print("X",TXT_X+5,y+4,2)
-            if (_correctOnZ == true) {
-                TIC.print(_messages[_rand].wrong,TXT_X+15,y+4,0)
-            } else {
-                TIC.print(_messages[_rand].correct,TXT_X+15,y+4,0)
-            }
-        }
+        _phone.draw()
 
         TIC.print("A to suicide",140,HEIGHT-8,0)
         TIC.print("_x: %(_x)", 2, HEIGHT-16, 0)
-        if (_choiceMade == true) {
-            if (_correctChoice == true) {
-                TIC.print("Correct Choice",2, HEIGHT-32, 0)
-            } else {
-                TIC.print("Wrong Choice",2, HEIGHT-32, 0)
-            }
-        }
     }
 
     wrongAnswer() {
@@ -1155,6 +1064,110 @@ class PineTree is Obstacle {
 
     draw(camX,camY) {
         TIC.spr(290,x-camX,y-camY,0,1,0,0,2,4)
+    }
+}
+
+class Phone {
+    construct new() {
+        _showPhone = false
+        _rand=0
+        _randOrder=0
+        _correctOnZ=true
+        _correctChoice=false
+        _choiceMade=false
+        var message1 = Message.new("Roomie", "Did you eat the\ncake I left in the\nfridge?","No way","Yes way")
+        var message2 = Message.new("Babe", "Are you ready to\nmeet my family\ntonight?","Of course","Of course not")
+        var message3 = Message.new("Boss", "Can you please stop\nsaying smells like\nvagina when you\npast my office","acceptable","unacceptable")
+        var message4 = Message.new("Mum", "Hi, Mum here\nHave you forgotten\nyour grandma's\nbirthday?","No","Yes")
+        var message5 = Message.new("Bestie", "We hitting the town\nthis weekend?\nIt has been a while.","Hell yes","Hell no")
+        var message6 = Message.new("Bestie", "Did my girlfriend\nsend nudes to you?","Hell no","Hell yes")
+        var message7 = Message.new("Roomie", "Can you please\nstop using my\ntowel after you\nhave a shower?","Yes way","No way")
+        var message8 = Message.new("Babe", "Do you think I\nlook I look\nfat in my new\ndress?","Of course not","Of course")
+        var message9 = Message.new("Bestie", "Impression yoda my\nlike you do?","Hell yes","Hell no")
+        var message10 = Message.new("Boss", "Hawaiian shirt day\nwill be on every\nfriday from now\non ","unacceptable","acceptable")
+        var message11 = Message.new("Mum", "Hi, Mum here\nWill you be joining\nus for Christmas\nlunch?","Yes","No")
+        var message12 = Message.new("Mum", "Hi, Mum here\nI think I put a\nvirus on my\ncomputer. Can you\nfix it now?","Yes","No")
+        var message13 = Message.new("Bestie", "When I move\noverseas are you\ngoing to forget me?","Hell no","Hell yes")
+        var message14 = Message.new("Boss", "I'm going to\nneed those TPS\nreports ASAP ","acceptable","unacceptable")
+        var message15 = Message.new("Babe", "Just watching\nfarmer wants a wife\nand do you think\nJamie is hotter\nthan me?","Of course not","Of course")
+        var message16 = Message.new("Babe", "Was thinking of\nyou today. Did you\nthink of me?","Of course","Of course not")
+        var message17 = Message.new("Mum", "Hi, Mum here\nDo you think it\nwould be too much\n effort call me\nsometime?","No","Yes")
+        var message18 = Message.new("Roomie", "Can you please\nlearn to flush\nthe toilet. Sick\nof surprises","Yes way","No way")
+        var message19 = Message.new("Roomie", "Did you set up\na camera in my\nbedroom to spy\non me?","No way","Yes way")
+        var message20 = Message.new("Bestie", "Hey, Birthday this\nweekend. You coming\nyeah?","Hell yes","Hell no")
+
+
+        _messages = [message1,message2,message3,message4,message5,message6,message7,message8,message9,
+        message10,message11,message12,message13,message14,message15,message16,message17,message18,message19,
+        message20]
+    } 
+    update() {
+        if (_showPhone == true) {
+            if(TIC.btnp(BTN_A)){
+                _correctChoice = _correctOnZ == true
+                _choiceMade=true
+                _showPhone=false
+                
+                TIC.sfx(SFXNEXT)
+            }
+            if(TIC.btnp(BTN_B)){
+                _correctChoice = _correctOnZ == false
+                _choiceMade=true
+                _showPhone=false
+
+                TIC.sfx(SFXNEXT)
+            }
+        }
+    }
+
+    showPhone() {
+         _choiceMade = false
+         _showPhone = true
+         _rand = RANDOM.int(_messages.count)
+         _randOrder = RANDOM.int(2)
+         _correctOnZ = _randOrder == 0
+    }
+
+    isShowing() {
+        _showPhone
+    }
+
+    hidePhone() {
+        _showPhone = false
+    }
+
+    isWrong() {
+        return _choiceMade == true && _correctChoice == false
+    }
+
+    draw() {
+        if (_showPhone){
+            var y=TXT_Y
+            TIC.rect(TXT_X,y,TXT_W,TXT_H,12)
+            TIC.rect(TXT_X,y,TXT_W,20,13)
+            TIC.print(_messages[_rand].sender,TXT_X+4,y+4,0)
+            y=y+20
+            TIC.rect(TXT_X+3,y+2,TXT_W-35,25,13)
+            TIC.print(_messages[_rand].message,TXT_X+5,y+4,0)
+
+
+            y=y+40
+            TIC.rectb(TXT_X+3,y+2,10,10,13)
+            TIC.print("Z",TXT_X+5,y+4,5)
+            if (_correctOnZ == true) {
+                TIC.print(_messages[_rand].correct,TXT_X+15,y+4,0)
+            } else {
+                TIC.print(_messages[_rand].wrong,TXT_X+15,y+4,0)
+            }
+            y=y+15
+            TIC.rectb(TXT_X+3,y+2,10,10,13)
+            TIC.print("X",TXT_X+5,y+4,2)
+            if (_correctOnZ == true) {
+                TIC.print(_messages[_rand].wrong,TXT_X+15,y+4,0)
+            } else {
+                TIC.print(_messages[_rand].correct,TXT_X+15,y+4,0)
+            }
+        }
     }
 }
 
