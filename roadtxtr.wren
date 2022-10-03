@@ -32,7 +32,7 @@ var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y
 var EVENT_TICK=600
-var WIN_X=10000
+var WIN_X=6000
 var STRESS_TICK=120
 var SHAKING_TICK=30
 var RANDOM=Random.new()
@@ -504,7 +504,7 @@ class SkipState is State {
     canSkip {tt>_grace}
 
 	next() {
-		if (canSkip && (TIC.btnp(0) || TIC.btnp(1) || TIC.btnp(2) || TIC.btnp(3) || TIC.btnp(4) || TIC.btnp(5) || TIC.btnp(6) || TIC.btnp(7))) {
+		if (canSkip && (TIC.btnp(0) || TIC.btnp(1) || TIC.btnp(2) || TIC.btnp(3) || TIC.btnp(4) || TIC.btnp(5))) {
 			finish()
 			nextstate.reset()
 			return nextstate
@@ -617,13 +617,7 @@ class TitleState is State {
         }
         _phone.update()
         if (!_phone.isShowing()){
-            _phone.showPhone([
-                Message.new("Game hint", "Drive the car\nup/down.\nIsn't this\ngame great?","Yes!","No..."),
-                Message.new("Game hint", "Hitting trees\nand pedestrians\ndamages the car!","Got it","Who cares"),
-                Message.new("Game hint", "Answer texts\nto hide the phone","Like this","Go away"),
-                Message.new("Game hint", "Wrong replies\nwill freeze\nthe car","Sure","Liar"),
-                Message.new("Game hint", "What is 1+1?","2","I refuse")
-            ])
+            _phone.showPhone([Message.new("Helpful Person", "Drive the car\nup/down.\nIsn't this\ngame great?","Yes!","No...")])
         }
     }
 
@@ -736,6 +730,11 @@ class MainState is State {
             _currentTime = 0
         }
 
+        // Skip to death screen with B button
+        if(TIC.btnp(BTN_X)){
+            _player.onHit(9999)
+        }
+
         _progressbar.update()
         if (_phone.isWrong() == true) {
             wrongAnswer()
@@ -777,6 +776,7 @@ class MainState is State {
         _progressbar.draw(_x)
         _phone.draw()
 
+        TIC.print("A to suicide",140,HEIGHT-8,0)
         TIC.print("_x: %(_x)", 2, HEIGHT-16, 0)
     }
 
@@ -788,9 +788,7 @@ class MainState is State {
 
 class DeathState is SkipState {
 	construct new() {
-		super(60)
-        _player=Player.new(WIDTH/2,HEIGHT/2,0)
-        _player.health=1
+		super(10)
     }
 
     reset() {
@@ -802,17 +800,11 @@ class DeathState is SkipState {
         return
     }
 
-    update() {
-        super.update()
-        _player.update(0,0)
-    }
-
 	draw() {
 		super.draw()
 		TIC.cls(COLOR_BG)
-        _player.draw(0,0)
-		TIC.print("Totalled!", 50, 50, 3)
-		TIC.print("Press any key to restart", 40, 100, 12)
+		TIC.print("Totalled!", 40, 50)
+		TIC.print("Press any key to restart", 10, 10)
     }
 }
 
@@ -934,7 +926,6 @@ class Smoke is GameObject {
 
 class Player is GameObject {
     health { _health }
-    health=(value){_health=value}
     stressed { _stressed }
 
     makeStressed(){ 
@@ -1149,6 +1140,7 @@ class Phone {
         _correctOnZ=true
         _correctChoice=false
         _choiceMade=false
+        _y=HEIGHT
         var message1 = Message.new("Roomie", "Did you eat the\ncake I left in the\nfridge?","No way","Yes way")
         var message2 = Message.new("Babe", "Are you ready to\nmeet my family\ntonight?","Of course","Of course not")
         var message3 = Message.new("Boss", "Can you please stop\nsaying smells like\nvagina when you\npast my office","acceptable","unacceptable")
@@ -1177,6 +1169,12 @@ class Phone {
     } 
     update() {
         if (_showPhone == true) {
+            if (_y > TXT_Y) {
+                _y= _y - 10
+            }
+            if (_y < TXT_Y) {
+                _y = TXT_Y
+            }
             if(TIC.btnp(BTN_X)){
                 _correctChoice = _correctOnZ == true
                 _choiceMade=true
@@ -1190,6 +1188,13 @@ class Phone {
                 _showPhone=false
 
                 TIC.sfx(_correctChoice?SFXRIGHT:SFXWRONG)
+            }
+        } else {
+            if (_y < HEIGHT) {
+                _y= _y + 10
+            }
+            if (_y > HEIGHT) {
+                _y = HEIGHT
             }
         }
     }
@@ -1230,15 +1235,15 @@ class Phone {
     }
 
     draw() {
-        if (_showPhone){
+        //if (_showPhone){
             var R=8
             var PHONE_C=0
-            TIC.circ(TXT_X,TXT_Y,R,PHONE_C)
-            TIC.circ(TXT_X+TXT_W,TXT_Y,R,PHONE_C)
-            TIC.rect(TXT_X,TXT_Y-R,TXT_W,R,PHONE_C)
-            TIC.rect(TXT_X-R,TXT_Y,R,TXT_H,PHONE_C)
-            TIC.rect(TXT_X+TXT_W,TXT_Y,R+1,TXT_H,PHONE_C)
-            var y=TXT_Y
+            TIC.circ(TXT_X,_y,R,PHONE_C)
+            TIC.circ(TXT_X+TXT_W,_y,R,PHONE_C)
+            TIC.rect(TXT_X,_y-R,TXT_W,R,PHONE_C)
+            TIC.rect(TXT_X-R,_y,R,TXT_H,PHONE_C)
+            TIC.rect(TXT_X+TXT_W,_y,R+1,TXT_H,PHONE_C)
+            var y=_y
             TIC.rect(TXT_X,y,TXT_W,TXT_H,12)
             TIC.rect(TXT_X,y,TXT_W,20,13)
             TIC.print(_messages[_rand].sender,TXT_X+4,y+4,0)
@@ -1263,7 +1268,7 @@ class Phone {
             } else {
                 TIC.print(_messages[_rand].correct,TXT_X+15,y+4,0)
             }
-        }
+       //}
     }
 }
 
