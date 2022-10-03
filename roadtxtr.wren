@@ -32,6 +32,7 @@ var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y-10
 var EVENT_TICK=200
 var WIN_X=2000
+var STRESS_TICK=100
 var RANDOM=Random.new()
 
 // BUTTONS
@@ -690,6 +691,9 @@ class MainState is State {
                 _showText=!_showText
                 TIC.sfx(SFXNEXT)
             }
+            if (_choiceMade == true && _correctChoice == false) {
+                _player.makeStressed()
+            }
         }
 
         _currentTime = _currentTime + 1
@@ -896,6 +900,11 @@ class GameObject {
 
 class Player is GameObject {
     health { _health }
+    stressed { _stressed }
+
+    makeStressed(){ 
+        _stressed=true
+    }
 
     construct new(x,y,speed) {
         super(x,y,Rect.new(0,5,32,11))
@@ -903,7 +912,9 @@ class Player is GameObject {
         _ticks=0
         _frame=0
         _steeringSpeed=1
+        _stressTick=0
         _health=10
+        _stressed=false
     }
 
     onHit(dmg){
@@ -917,11 +928,19 @@ class Player is GameObject {
     update() {
         super()
         x=x+_speed
-        if(TIC.btn(BTN_UP)) {
-            y=y-_steeringSpeed
+        if(_stressed == true) {
+            _stressTick=_stressTick + 1
+        } else {
+            if(TIC.btn(BTN_UP)) {
+                y=y-_steeringSpeed
+            }
+            if(TIC.btn(BTN_DOWN)) {
+                y=y+_steeringSpeed
+            }
         }
-        if(TIC.btn(BTN_DOWN)) {
-            y=y+_steeringSpeed
+        if(_stressTick >= STRESS_TICK) {
+           _stressTick = 0
+           _stressed = false 
         }
         _ticks=_ticks+1
         if(_ticks==15){
