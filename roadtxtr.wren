@@ -27,6 +27,7 @@ var SFXSCREAM=4
 var SFXGRASS=5
 var SFXRIGHT=6
 var SFXWRONG=7
+var SFXTXT=8
 var TXT_X=120
 var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
@@ -504,7 +505,7 @@ class SkipState is State {
     canSkip {tt>_grace}
 
 	next() {
-		if (canSkip && (TIC.btnp(0) || TIC.btnp(1) || TIC.btnp(2) || TIC.btnp(3) || TIC.btnp(4) || TIC.btnp(5))) {
+        if (canSkip && (TIC.btnp(0) || TIC.btnp(1) || TIC.btnp(2) || TIC.btnp(3) || TIC.btnp(4) || TIC.btnp(5))) {
 			finish()
 			nextstate.reset()
 			return nextstate
@@ -617,7 +618,13 @@ class TitleState is State {
         }
         _phone.update()
         if (!_phone.isShowing()){
-            _phone.showPhone([Message.new("Helpful Person", "Drive the car\nup/down.\nIsn't this\ngame great?","Yes!","No...")])
+            _phone.showPhone([
+                Message.new("Game hint", "Drive the car\nup/down.\nIsn't this\ngame great?","Yes!","No..."),
+                Message.new("Game hint", "Hitting trees\nand pedestrians\ndamages the car!","Got it","Who cares"),
+                Message.new("Game hint", "Answer texts\nto hide the phone","Like this","Go away"),
+                Message.new("Game hint", "Wrong replies\nwill freeze\nthe car","Sure","Liar"),
+                Message.new("Game hint", "What is 1+1?","2","I refuse")
+            ])
         }
     }
 
@@ -730,11 +737,6 @@ class MainState is State {
             _currentTime = 0
         }
 
-        // Skip to death screen with B button
-        if(TIC.btnp(BTN_X)){
-            _player.onHit(9999)
-        }
-
         _progressbar.update()
         if (_phone.isWrong() == true) {
             wrongAnswer()
@@ -776,7 +778,6 @@ class MainState is State {
         _progressbar.draw(_x)
         _phone.draw()
 
-        TIC.print("A to suicide",140,HEIGHT-8,0)
         TIC.print("_x: %(_x)", 2, HEIGHT-16, 0)
     }
 
@@ -788,7 +789,9 @@ class MainState is State {
 
 class DeathState is SkipState {
 	construct new() {
-		super(10)
+		super(60)
+        _player=Player.new(WIDTH/2,HEIGHT/2,0)
+        _player.health=1
     }
 
     reset() {
@@ -800,11 +803,17 @@ class DeathState is SkipState {
         return
     }
 
+    update() {
+        super.update()
+        _player.update(0,0)
+    }
+
 	draw() {
 		super.draw()
 		TIC.cls(COLOR_BG)
-		TIC.print("Totalled!", 40, 50)
-		TIC.print("Press any key to restart", 10, 10)
+        _player.draw(0,0)
+		TIC.print("Totalled!", 50, 50, 3)
+		TIC.print("Press any key to restart", 40, 100, 12)
     }
 }
 
@@ -926,6 +935,7 @@ class Smoke is GameObject {
 
 class Player is GameObject {
     health { _health }
+    health=(value){_health=value}
     stressed { _stressed }
 
     makeStressed(){ 
@@ -1794,6 +1804,7 @@ class Game is TIC{
 // 005:d400d400d400c400c400d400d400d400e400e400d400d400c400c400d400c400d400f400f400f400e400b400a400a400a400a400b400c400d400e4004000000f0000
 // 006:0800080018001800180038405840584058406800680068007800887088709870987098709870a870b870b870c870d870f870f870f870f870f870f870500000000000
 // 007:060006000600f600f600f6000670067006700670067016701670167016701670167016702670267036703670367046705670f670f670f670f670f6702f5000000000
+// 008:4800010001001100110021002100310041004100510051006100710081008100a100a100b100b100c100c100d100d100d100e100e100e100e100f100770000000000
 // 048:04002100410f610f910ee10ef10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10dc0b000000000
 // 049:64008400b400e400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400300000000000
 // 050:1400640fa40ef40df40cf40bf409f408f408f408f409f409f408f408f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400b00000000000
