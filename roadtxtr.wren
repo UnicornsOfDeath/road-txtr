@@ -756,16 +756,20 @@ class MainState is State {
 
     draw() {
         _map.draw()
+
         _obstacles.each {|obstacle|
             if(DEBUG_HITBOX){
                 TIC.rectb(obstacle.x-_x+obstacle.hitbox.x,obstacle.y+obstacle.hitbox.y,obstacle.hitbox.width,obstacle.hitbox.height,5)
             }
-            obstacle.draw(_x,_y)
         }
         if(DEBUG_HITBOX){
             TIC.rectb(_player.x-_x+_player.hitbox.x,_player.y+_player.hitbox.y,_player.hitbox.width,_player.hitbox.height,5)
         }
-        _player.draw(_x,_y)
+
+        var drawables=_obstacles+[_player]
+        drawables.sort {|a,b| a.y+a.hitbox.top < b.y+b.hitbox.top}
+        drawables.each {|drawable| drawable.draw(_x,_y)}
+
         _progressbar.draw(_x)
         _phone.draw()
 
