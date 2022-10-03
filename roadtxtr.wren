@@ -693,7 +693,7 @@ class MainState is State {
                 TIC.sfx(SFXNEXT)
             }
             if (_choiceMade == true && _correctChoice == false) {
-                _player.makeStressed()
+                wrongAnswer()
             }
         }
 
@@ -705,6 +705,10 @@ class MainState is State {
             _correctOnZ = true
            } else {
             _correctOnZ = false
+           }
+           // If message is already shown, stress
+           if (_showText == true) {
+            wrongAnswer()
            }
            _showText=true
            _choiceMade=false
@@ -782,6 +786,10 @@ class MainState is State {
         if(_map.tileAtPixelIs(_player.x,_player.y,GRASS_TILES)) {
             TIC.print("GRASS",0,0)
         }
+    }
+
+    wrongAnswer() {
+        _player.makeStressed()
     }
 }
 
