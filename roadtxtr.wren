@@ -637,7 +637,8 @@ class TitleState is State {
     draw() {
         super.draw()
         TIC.cls(COLOR_BG)
-        TIC.print(">>> START GAME",30,100,12+(tt/20)%2)
+        TIC.print(((tt/40).floor%2)==0?">>> START GAME":">>> DRIVE HERE",30,100,12+(tt/20)%2)
+        TIC.spr(510,20,64+((tt/20).floor%4)*10,0)
         _player.draw(0,0)
         _phone.draw()
         var cf=ChunkyFont.new(30,20)
@@ -1730,6 +1731,7 @@ class Game is TIC{
 // 241:00000000000000000000000000e000000ed0000000e0d00000000e0000000000
 // 242:000000000000000000ee00000ee000000ed0e00000edde00000ede000000e000
 // 243:0000000000fe00000feef000fee0dff0fedfefe00feddef00ffede00000fe000
+// 254:00cdde0000ddee0000ddee00cdddeeddddddeeef0edddef000edef00000ef000
 // 255:0000000000000000122221002aa2aa00222222241cd22cd10de11de000000000
 // </SPRITES>
 
