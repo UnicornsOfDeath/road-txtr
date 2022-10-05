@@ -1093,7 +1093,7 @@ class FlyingObstacle is Obstacle {
         super()
         _ticks=_ticks+1
         if(!isAlive){
-            _dy=_dy+0.15
+            _dy=_dy+0.07
         }
         y=y+_dy
         x=x+_dx
@@ -1101,7 +1101,7 @@ class FlyingObstacle is Obstacle {
 
     onHit(){
         super()
-        _dy=-3
+        _dy=-2
         _dx=1
         _ticks=0
     }
@@ -1114,7 +1114,7 @@ class FlyingObstacle is Obstacle {
             TIC.spr(_sprite+frame,drawX,drawY,0,1,_flip?1:0,0,1,_tileHeight)
         }else{
             var frame=_animated ? (_ticks/5).floor%2 : 0
-            var r=_animated ? ((_ticks/10).floor%4)*90 : 0
+            var r=_animated ? ((_ticks/10).floor%4) : 0
             TIC.spr(_sprite+frame,drawX,drawY,0,1,0,r,1,_tileHeight)
         }
     }
