@@ -1,8 +1,8 @@
-// title:   road txtr
-// author:  unicorns of death
-// desc:    tbd
+// title:   ROAD TXTR
+// author:  unicorns of DEATH
+// desc:    avoid pedestrians and respond to texts
 // site:    tbd
-// license: MIT License (change this to your license of choice)
+// license: MIT License
 // version: 0.1
 // script:  wren
 
