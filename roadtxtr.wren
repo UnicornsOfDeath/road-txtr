@@ -41,6 +41,8 @@ var STRESS_TICK=120
 var SHAKING_TICK=30
 var RANDOM=Random.new()
 var DEBUG_HITBOX=false
+var ENABLE_PHONE=true
+var ENABLE_COLLISIONS=true
 var SHOW_DOG=false
 
 // VRAM ADDRESSES
@@ -61,6 +63,16 @@ var BTN_Y=7
 // SPRITES
 
 var PEDESTRIAN_SPRITES=[256,258,260,262,264,266,268,270]
+var PEDESTRIAN_SPEEDS={
+    256:0.25,
+    258:0.2,
+    260:0.15,
+    262:0.3,
+    264:0.4,
+    266:0.5,
+    268:0.2,
+    270:0.3
+}
 
 // TILE IDs
 var TILE_SIZE=8
@@ -69,8 +81,8 @@ var TILE_SIZE_2=16
 var ROAD_TILES=[0,1,2,3,16,17,18,19,32,33,48,49]
 var GRASS_TILES=[64,65,80,81]
 var FOOTPATH_TILES=[66,67,82,83,98,99,114,115]
-var FOOTPATH_DOWN=[68,69,70,71,84,85,86,87]
-var FOOTPATH_UP=[100,101,102,103,116,117,118,119]
+var FOOTPATH_DOWN=[68,69,84,85]
+var FOOTPATH_UP=[100,101,116,117]
 var CROSSING_TILES=[34,35,50,51]
 
 var GOOD_TEXT=0
@@ -763,7 +775,7 @@ class MainState is State {
 
         _obstacles.each {|obstacle|
             obstacle.update()
-            if(obstacle.isAlive&&obstacle.intersects(_player)) {
+            if(obstacle.isAlive&&obstacle.intersects(_player) && ENABLE_COLLISIONS) {
                 _player.onHit(obstacle.damage)
                 obstacle.onHit()
             }
@@ -1111,13 +1123,13 @@ class Obstacle is GameObject {
 
 class FlyingObstacle is Obstacle {
     // Obstacle that flies away when hit
-    construct new(x,y,sprite,animated,tileHeight,flip) {
+    construct new(x,y,sprite,animFrames,tileHeight,flip) {
         super(x,y,1,Rect.new(4,3,7,7))
         _ticks=0
         _dy=0
         _dx=0
         _sprite=sprite
-        _animated=animated
+        _animFrames=animFrames
         _tileHeight=tileHeight
         _flip=flip
     }
@@ -1146,11 +1158,11 @@ class FlyingObstacle is Obstacle {
         var drawX=x-camX+4
         var drawY=y-camY-_tileHeight*8+8
         if(isAlive){
-            var frame=_animated ? (_ticks/30).floor%2 : 0
+            var frame=_animFrames>0 ? (_ticks/_animFrames).floor%2 : 0
             TIC.spr(_sprite+frame,drawX,drawY,0,1,_flip?1:0,0,1,_tileHeight)
         }else{
-            var frame=_animated ? (_ticks/5).floor%2 : 0
-            var r=_animated ? ((_ticks/10).floor%4) : 0
+            var frame=_animFrames>0 ? (_ticks/5).floor%2 : 0
+            var r=_animFrames>0 ? ((_ticks/10).floor%4) : 0
             TIC.spr(_sprite+frame,drawX,drawY,0,1,0,r,1,_tileHeight)
         }
     }
@@ -1158,11 +1170,10 @@ class FlyingObstacle is Obstacle {
 
 class Oldie is FlyingObstacle {
     construct new(x,y,walkDirX,walkDirY,sprite,map) {
-        super(x,y,sprite,true,2,(walkDirX==-1||RANDOM.int(0,2)==0)&&walkDirX!=1)
+        super(x,y,sprite,(6/PEDESTRIAN_SPEEDS[sprite]).floor,2,(walkDirX==-1||RANDOM.int(0,2)==0)&&walkDirX!=1)
 
-        __walkingSpeed=0.25
-        _walkingSpeedX=walkDirX*__walkingSpeed
-        _walkingSpeedY=walkDirY*__walkingSpeed
+        _walkingSpeedX=walkDirX*PEDESTRIAN_SPEEDS[sprite]
+        _walkingSpeedY=walkDirY*PEDESTRIAN_SPEEDS[sprite]
         _map=map
     }
 
@@ -1181,11 +1192,11 @@ class Oldie is FlyingObstacle {
             x=x+_walkingSpeedX
             y=y+_walkingSpeedY
             if (_walkingSpeedX!=0) {
-                if (_map.tileAtPixelIs(x,y,FOOTPATH_DOWN)){
-                    y=y+_walkingSpeedX*0.5
+                if (_map.tileAtPixelIs(x,y+8,FOOTPATH_DOWN)){
+                    y=y+_walkingSpeedX.abs
                 }
-                if (_map.tileAtPixelIs(x,y,FOOTPATH_UP)){
-                    y=y-_walkingSpeedX*0.5
+                if (_map.tileAtPixelIs(x,y+8,FOOTPATH_UP)){
+                    y=y-_walkingSpeedX.abs
                 }
             } else if ((_walkingSpeedY>0 && (_map.tileAtPixelIs(x,y,GRASS_TILES) || _map.tileAtPixelIs(x,y,FOOTPATH_TILES))) ||
                 (_walkingSpeedY<0 && (_map.tileAtPixelIs(x,y+8,GRASS_TILES) || _map.tileAtPixelIs(x,y+8,FOOTPATH_TILES)))) {
@@ -1212,7 +1223,7 @@ class Corpse is GameObject {
 
 class Post is FlyingObstacle {
     construct new(x,y) {
-        super(x,y,292+RANDOM.int(2),false,4,false)
+        super(x,y,292+RANDOM.int(2),0,4,false)
     }
 }
 
@@ -1283,7 +1294,7 @@ class Phone {
         RANDOM.shuffle(_messages)
     }
     update() {
-        if (_showPhone == true) {
+        if (_showPhone && ENABLE_PHONE) {
             if (_y > TXT_Y) {
                 _y= _y - 10
             }
