@@ -35,7 +35,8 @@ var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y
 var EVENT_TICK=600
-var WIN_X=10000
+var WIN_X=13000
+var CROSSING_GAP=200
 var STRESS_TICK=120
 var SHAKING_TICK=30
 var RANDOM=Random.new()
@@ -64,9 +65,10 @@ var PEDESTRIAN_SPRITES=[256,258,260,262,264,266,268,270]
 var TILE_SIZE=8
 var TILE_SIZE_2=16
 
-var ROAD_TILES=[0,1,2,3,32,33]
+var ROAD_TILES=[0,1,2,3,16,17,18,19,32,33,48,49]
 var GRASS_TILES=[64,65,80,81]
 var FOOTPATH_TILES=[66,67,82,83,98,99,114,115]
+var CROSSING_TILES=[34,35,50,51]
 
 var GOOD_TEXT=0
 var BAD_TEXT=0
@@ -659,6 +661,7 @@ class MainState is State {
         _progressbar = ProgressBar.new()
 		_winstate=this
         _deathticks=0
+        _lastCrossingX=0
     }
     winstate { _winstate }
     winstate=(value) {
@@ -675,6 +678,7 @@ class MainState is State {
         _currentTime=0
         _choiceMade=false
         _deathticks=0
+        _lastCrossingX=0
 		TIC.music(MUSGAME,-1,-1,true)
         GOOD_TEXT=0
         BAD_TEXT=0
@@ -705,8 +709,28 @@ class MainState is State {
                 var sprite=RANDOM.sample(PEDESTRIAN_SPRITES)
 
                 if(_map.tileAtPixelIs(coords[0],coords[1],ROAD_TILES)) {
-                    _obstacles.add(Oldie.new(coords[0],coords[1],0,dir,sprite))
+                    // Crossing road
+                    _obstacles.add(Oldie.new(coords[0]+RANDOM.int(0,8),coords[1],0,dir,sprite))
+
+                    // Change road tiles to crossing tiles
+                    if (_x > _lastCrossingX + CROSSING_GAP && RANDOM.int(0,2)==0) {
+                        _lastCrossingX = _x
+                        var tileX = (coords[0]/TILE_SIZE).floor
+                        var x = tileX%(MAP_W*3)
+                        for(y in 0...MAP_H){
+                            if (_map.tileAtIs(x,y,ROAD_TILES)) {
+                                TIC.mset(x,y,CROSSING_TILES[0])
+                                TIC.mset(x+1,y,CROSSING_TILES[1])
+                            }
+                            y = y + 1
+                            if (_map.tileAtIs(x,y,ROAD_TILES)) {
+                                TIC.mset(x,y,CROSSING_TILES[2])
+                                TIC.mset(x+1,y,CROSSING_TILES[3])
+                            }
+                        }
+                    }
                 } else {
+                    // Walking along sidewalk
                     _obstacles.add(Oldie.new(coords[0],coords[1],dir,0,sprite))
                 }
             }
@@ -1458,6 +1482,10 @@ class GameMap {
     tileAtPixelIs(x,y,options) {
         var tileX=(x/TILE_SIZE).floor
         var tileY=(y/TILE_SIZE).floor
+        return tileAtIs(tileX,tileY,options)
+    }
+
+    tileAtIs(tileX,tileY,options) {
         return options.contains(TIC.mget(tileX%(MAP_W*3),tileY))
     }
 
@@ -1524,8 +1552,12 @@ class Game is TIC{
 // 019:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffcccfffff
 // 032:fffffcccffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 // 033:cccfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+// 034:ffccccccffffffffffffffffffccccccffccccccffffffffffffffffffcccccc
+// 035:ccccccffffffffffffffffffccccccffccccccffffffffffffffffffccccccff
 // 048:ffffffffffffffffffffffffffffffffffffffffffffffffeeeeeeeedddddddd
 // 049:ffffffffffffffffffffffffffffffffffffffffffffffffeeeeeeeedddddddd
+// 050:ffccccccffffffffffffffffffccccccffccccccffffffffffffffffffcccccc
+// 051:ccccccffffffffffffffffffccccccffccccccffffffffffffffffffccccccff
 // 064:7777775775777767767776677767776777777777777577757676777677777777
 // 065:7777577777776667677777776777777675775776767767777777777775777777
 // 066:eeeeeeeedddddddddddddddddddddddddddddddddddddddddddddddddddddddd
