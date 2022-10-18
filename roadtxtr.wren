@@ -41,7 +41,7 @@ var STRESS_TICK=120
 var SHAKING_TICK=30
 var RANDOM=Random.new()
 var DEBUG_HITBOX=false
-var SHOW_DOG=true
+var SHOW_DOG=false
 
 // VRAM ADDRESSES
 var MOUSE_CURSOR=0x3FFB
@@ -69,6 +69,8 @@ var TILE_SIZE_2=16
 var ROAD_TILES=[0,1,2,3,16,17,18,19,32,33,48,49]
 var GRASS_TILES=[64,65,80,81]
 var FOOTPATH_TILES=[66,67,82,83,98,99,114,115]
+var FOOTPATH_DOWN=[68,69,70,71,84,85,86,87]
+var FOOTPATH_UP=[100,101,102,103,116,117,118,119]
 var CROSSING_TILES=[34,35,50,51]
 
 var GOOD_TEXT=0
@@ -711,7 +713,7 @@ class MainState is State {
 
                 if(_map.tileAtPixelIs(coords[0],coords[1],ROAD_TILES)) {
                     // Crossing road
-                    _obstacles.add(Oldie.new(coords[0]+RANDOM.int(0,8),coords[1],0,dir,sprite))
+                    _obstacles.add(Oldie.new(coords[0]+RANDOM.int(0,8),coords[1],0,dir,sprite,_map))
 
                     // Change road tiles to crossing tiles
                     if (_x > _lastCrossingX + CROSSING_GAP && RANDOM.int(0,2)==0) {
@@ -732,7 +734,7 @@ class MainState is State {
                     }
                 } else {
                     // Walking along sidewalk
-                    _obstacles.add(Oldie.new(coords[0],coords[1],dir,0,sprite))
+                    _obstacles.add(Oldie.new(coords[0],coords[1],dir,0,sprite,_map))
                 }
             }
         }
@@ -876,7 +878,7 @@ class WinState is SkipState {
     }
 
 	finish() {
-        return
+        SHOW_DOG=true
     }
 
 	draw() {
@@ -887,6 +889,9 @@ class WinState is SkipState {
 		TIC.print("Bad texts: %(BAD_TEXT)", 30, 70, 12)
 		TIC.print("Pedestrians killed: %(PEDESTRIANS_KILLED.count)", 30, 80, 12)
         _corpses.each{|corpse| corpse.draw()}
+        if (!SHOW_DOG) {
+            TIC.print("Dog unlocked!", 30, 110, 5)
+        }
         if (canSkip){
             TIC.print("Press any key to reset", 10, HEIGHT-10, 12)
         }
@@ -1118,6 +1123,7 @@ class FlyingObstacle is Obstacle {
     }
     sprite{_sprite}
     ticks{_ticks}
+    flip=(value){_flip=value}
 
     update(){
         super()
@@ -1151,12 +1157,13 @@ class FlyingObstacle is Obstacle {
 }
 
 class Oldie is FlyingObstacle {
-    construct new(x,y,walkDirX,walkDirY,sprite) {
+    construct new(x,y,walkDirX,walkDirY,sprite,map) {
         super(x,y,sprite,true,2,(walkDirX==-1||RANDOM.int(0,2)==0)&&walkDirX!=1)
 
         __walkingSpeed=0.25
         _walkingSpeedX=walkDirX*__walkingSpeed
         _walkingSpeedY=walkDirY*__walkingSpeed
+        _map=map
     }
 
     onHit(){
@@ -1173,6 +1180,19 @@ class Oldie is FlyingObstacle {
         } else {
             x=x+_walkingSpeedX
             y=y+_walkingSpeedY
+            if (_walkingSpeedX!=0) {
+                if (_map.tileAtPixelIs(x,y,FOOTPATH_DOWN)){
+                    y=y+_walkingSpeedX*0.5
+                }
+                if (_map.tileAtPixelIs(x,y,FOOTPATH_UP)){
+                    y=y-_walkingSpeedX*0.5
+                }
+            } else if ((_walkingSpeedY>0 && (_map.tileAtPixelIs(x,y,GRASS_TILES) || _map.tileAtPixelIs(x,y,FOOTPATH_TILES))) ||
+                (_walkingSpeedY<0 && (_map.tileAtPixelIs(x,y+8,GRASS_TILES) || _map.tileAtPixelIs(x,y+8,FOOTPATH_TILES)))) {
+                _walkingSpeedX=_walkingSpeedY*(RANDOM.int(0,1)-0.5)*1.2
+                flip=_walkingSpeedX<0
+                _walkingSpeedY=0
+            }
         }
     }
 }
