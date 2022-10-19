@@ -35,14 +35,15 @@ var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y
 var EVENT_TICK=600
-var WIN_X=13000
+var WIN_X=12800
 var CROSSING_GAP=200
 var STRESS_TICK=120
 var SHAKING_TICK=30
 var RANDOM=Random.new()
 var DEBUG_HITBOX=false
-var ENABLE_PHONE=true
+var ENABLE_PHONE=false
 var ENABLE_COLLISIONS=true
+var AUTO_DRIVE=true
 var SHOW_DOG=false
 
 // VRAM ADDRESSES
@@ -600,7 +601,7 @@ class SplashState is SkipState {
 
 class TitleState is State {
 	construct new() {
-        _player=Player.new(10,40,0)
+        _player=Player.new(10,40,0,null)
         _nextStateCounter=0
         _phone=Phone.new()
     }
@@ -610,7 +611,7 @@ class TitleState is State {
 	reset() {
 		super.reset()
 		TIC.music(MUSTITLE,-1,-1,false)
-        _player=Player.new(10,40,0)
+        _player=Player.new(10,40,0,null)
         _nextStateCounter=0
     }
 
@@ -668,10 +669,10 @@ class MainState is State {
         _x=0
         _y=0
         _speed=2
-        _player=Player.new(10,60,_speed)
         _phone=Phone.new()
         _obstacles=[]
         _map=GameMap.new()
+        _player=Player.new(10,60,_speed,_map)
         _currentTime=0
         _progressbar = ProgressBar.new()
 		_winstate=this
@@ -686,7 +687,7 @@ class MainState is State {
     reset() {
         super.reset()
         _x=0
-        _player=Player.new(10,60,_speed)
+        _player=Player.new(10,60,_speed,_map)
         _phone=Phone.new()
         _obstacles=[]
         _showText=false
@@ -846,7 +847,7 @@ class MainState is State {
 class DeathState is SkipState {
 	construct new() {
 		super(60)
-        _player=Player.new(WIDTH/2,HEIGHT/2,0)
+        _player=Player.new(WIDTH/2,HEIGHT/2,0,null)
         _player.health=1
     }
 
@@ -1006,9 +1007,10 @@ class Player is GameObject {
         _stressed=true
     }
 
-    construct new(x,y,speed) {
+    construct new(x,y,speed,map) {
         super(x,y,Rect.new(0,5,32,11))
         _speed=speed
+        _map=map
         _ticks=0
         _frame=0
         _steeringSpeed=1.5
@@ -1050,11 +1052,33 @@ class Player is GameObject {
             }
             _dy=(_dy+ddy*0.5).clamp(-1,1)
         }
+
         _dy=(_dy-_dy.sign*0.15).clamp(-1,1)
         if(_dy.abs<0.1){
             _dy=0
         }
         y=(y+_dy*_steeringSpeed).clamp(8,HEIGHT-16)
+
+        if (AUTO_DRIVE && _map) {
+            var driveY=0
+            if (_map.tileAtPixelIs(x+32,y+16,FOOTPATH_DOWN)){
+                driveY=-1
+            }
+            if (_map.tileAtPixelIs(x+32,y+2,FOOTPATH_UP)){
+                driveY=1
+            }
+            if (!_map.tileAtPixelIs(x+32,y+16,ROAD_TILES+CROSSING_TILES) && _map.tileAtPixelIs(x+32,y+4,ROAD_TILES+CROSSING_TILES)) {
+                driveY=-1
+            }
+            if (!_map.tileAtPixelIs(x+32,y+2,ROAD_TILES+CROSSING_TILES) && _map.tileAtPixelIs(x+32,y+14,ROAD_TILES+CROSSING_TILES)) {
+                driveY=1
+            }
+            if ((!_map.tileAtPixelIs(x+32,y+2,ROAD_TILES+CROSSING_TILES) || !_map.tileAtPixelIs(x+32,y+16,ROAD_TILES+CROSSING_TILES)) && driveY==0) {
+                driveY=y>HEIGHT/2?-1:1
+            }
+            y=y+_speed.abs*0.5*driveY
+        }
+
         if(_stressTick >= STRESS_TICK) {
            _stressTick = 0
            _stressed = false 
@@ -1367,7 +1391,7 @@ class Phone {
     }
 
     isShowing() {
-        return _showPhone
+        return _showPhone && ENABLE_PHONE
     }
 
     hidePhone() {
@@ -1394,41 +1418,42 @@ class Phone {
     }
 
     draw() {
-        //if (_showPhone){
-            var R=8
-            var PHONE_C=0
-            roundedRect(TXT_X,_y,TXT_W,TXT_H,R,PHONE_C)
-            var y=_y
-            TIC.rect(TXT_X,y,TXT_W,TXT_H,12)
-            TIC.rect(TXT_X,y,TXT_W,20,13)
-            TIC.rect(TXT_X+4,y+2,18,16,11)
-            TIC.rectb(TXT_X+3,y+1,20,18,12)
-            TIC.spr(_profilePic,TXT_X+5,y+2,0,2)
-            TIC.print(_messages[_messageIndex].sender,TXT_X+26,y+4,0)
-            y=y+20
-            roundedRect(TXT_X+6,y+5,TXT_W-15,30,3,13)
-            TIC.print(_messages[_messageIndex].message,TXT_X+5,y+4,0)
+        if (!ENABLE_PHONE) {
+            return
+        }
+        var R=8
+        var PHONE_C=0
+        roundedRect(TXT_X,_y,TXT_W,TXT_H,R,PHONE_C)
+        var y=_y
+        TIC.rect(TXT_X,y,TXT_W,TXT_H,12)
+        TIC.rect(TXT_X,y,TXT_W,20,13)
+        TIC.rect(TXT_X+4,y+2,18,16,11)
+        TIC.rectb(TXT_X+3,y+1,20,18,12)
+        TIC.spr(_profilePic,TXT_X+5,y+2,0,2)
+        TIC.print(_messages[_messageIndex].sender,TXT_X+26,y+4,0)
+        y=y+20
+        roundedRect(TXT_X+6,y+5,TXT_W-15,30,3,13)
+        TIC.print(_messages[_messageIndex].message,TXT_X+5,y+4,0)
 
 
-            y=y+40
-            roundedRect(TXT_X+5,y+2,TXT_W-20,8,2,6)
-            TIC.rectb(TXT_X+4,y+2,10,10,13)
-            TIC.print("A",TXT_X+6,y+4,0)
-            if (_correctOnZ == true) {
-                TIC.print(_messages[_messageIndex].correct,TXT_X+15,y+4,0)
-            } else {
-                TIC.print(_messages[_messageIndex].wrong,TXT_X+15,y+4,0)
-            }
-            y=y+15
-            roundedRect(TXT_X+5,y+2,TXT_W-20,8,2,6)
-            TIC.rectb(TXT_X+4,y+2,10,10,13)
-            TIC.print("Z",TXT_X+6,y+4,0)
-            if (_correctOnZ == true) {
-                TIC.print(_messages[_messageIndex].wrong,TXT_X+15,y+4,0)
-            } else {
-                TIC.print(_messages[_messageIndex].correct,TXT_X+15,y+4,0)
-            }
-       //}
+        y=y+40
+        roundedRect(TXT_X+5,y+2,TXT_W-20,8,2,6)
+        TIC.rectb(TXT_X+4,y+2,10,10,13)
+        TIC.print("A",TXT_X+6,y+4,0)
+        if (_correctOnZ == true) {
+            TIC.print(_messages[_messageIndex].correct,TXT_X+15,y+4,0)
+        } else {
+            TIC.print(_messages[_messageIndex].wrong,TXT_X+15,y+4,0)
+        }
+        y=y+15
+        roundedRect(TXT_X+5,y+2,TXT_W-20,8,2,6)
+        TIC.rectb(TXT_X+4,y+2,10,10,13)
+        TIC.print("Z",TXT_X+6,y+4,0)
+        if (_correctOnZ == true) {
+            TIC.print(_messages[_messageIndex].wrong,TXT_X+15,y+4,0)
+        } else {
+            TIC.print(_messages[_messageIndex].correct,TXT_X+15,y+4,0)
+        }
     }
 }
 
