@@ -1053,12 +1053,6 @@ class Player is GameObject {
             _dy=(_dy+ddy*0.5).clamp(-1,1)
         }
 
-        _dy=(_dy-_dy.sign*0.15).clamp(-1,1)
-        if(_dy.abs<0.1){
-            _dy=0
-        }
-        y=(y+_dy*_steeringSpeed).clamp(8,HEIGHT-16)
-
         if (AUTO_DRIVE && _map) {
             var driveY=0
             if (_map.tileAtPixelIs(x+32,y+16,FOOTPATH_DOWN)){
@@ -1076,7 +1070,22 @@ class Player is GameObject {
             if ((!_map.tileAtPixelIs(x+32,y+2,ROAD_TILES+CROSSING_TILES) || !_map.tileAtPixelIs(x+32,y+16,ROAD_TILES+CROSSING_TILES)) && driveY==0) {
                 driveY=y>HEIGHT/2?-1:1
             }
-            y=y+_speed.abs*0.5*driveY
+            
+            if (driveY!=0) {
+                y=y+_speed.abs*0.5*driveY
+                _dy=-_dy*RANDOM.float(0.5,1.5)
+            } else {
+                if (_dy.abs<0.01 || _dy.abs>0.5){
+                    _dy=0.25
+                }
+                y=y+_dy*_steeringSpeed
+            }
+        } else {
+            _dy=(_dy-_dy.sign*0.15).clamp(-1,1)
+            if(_dy.abs<0.1){
+                _dy=0
+            }
+            y=(y+_dy*_steeringSpeed).clamp(8,HEIGHT-16)
         }
 
         if(_stressTick >= STRESS_TICK) {
