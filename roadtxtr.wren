@@ -35,7 +35,7 @@ var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
 var TXT_H=HEIGHT-TXT_Y
 var EVENT_TICK=600
-var WIN_X=12800
+var WIN_X=12900
 var CROSSING_GAP=200
 var STRESS_TICK=120
 var SHAKING_TICK=30
@@ -726,7 +726,7 @@ class MainState is State {
 
                 if(_map.tileAtPixelIs(coords[0],coords[1],ROAD_TILES)) {
                     // Crossing road
-                    _obstacles.add(Oldie.new(coords[0]+RANDOM.int(0,8),coords[1],0,dir,sprite,_map))
+                    _obstacles.add(Oldie.new(coords[0]+RANDOM.int(0,8),coords[1],0,dir,sprite,_map,_player))
 
                     // Change road tiles to crossing tiles
                     if (_x > _lastCrossingX + CROSSING_GAP && RANDOM.int(0,2)==0) {
@@ -747,7 +747,7 @@ class MainState is State {
                     }
                 } else {
                     // Walking along sidewalk
-                    _obstacles.add(Oldie.new(coords[0],coords[1],dir,0,sprite,_map))
+                    _obstacles.add(Oldie.new(coords[0],coords[1],dir,0,sprite,_map,_player))
                 }
             }
         }
@@ -776,7 +776,7 @@ class MainState is State {
 
         _obstacles.each {|obstacle|
             obstacle.update()
-            if(obstacle.isAlive&&obstacle.intersects(_player) && ENABLE_COLLISIONS) {
+            if(obstacle.isAlive&&obstacle.intersects(_player) && ENABLE_COLLISIONS && !AUTO_DRIVE) {
                 _player.onHit(obstacle.damage)
                 obstacle.onHit()
             }
@@ -1202,12 +1202,13 @@ class FlyingObstacle is Obstacle {
 }
 
 class Oldie is FlyingObstacle {
-    construct new(x,y,walkDirX,walkDirY,sprite,map) {
+    construct new(x,y,walkDirX,walkDirY,sprite,map,player) {
         super(x,y,sprite,(6/PEDESTRIAN_SPEEDS[sprite]).floor,2,(walkDirX==-1||RANDOM.int(0,2)==0)&&walkDirX!=1)
 
         _walkingSpeedX=walkDirX*PEDESTRIAN_SPEEDS[sprite]
         _walkingSpeedY=walkDirY*PEDESTRIAN_SPEEDS[sprite]
         _map=map
+        _player=player
     }
 
     onHit(){
@@ -1225,17 +1226,32 @@ class Oldie is FlyingObstacle {
             x=x+_walkingSpeedX
             y=y+_walkingSpeedY
             if (_walkingSpeedX!=0) {
+                // Follow footpath if walking along the side
                 if (_map.tileAtPixelIs(x,y+8,FOOTPATH_DOWN)){
                     y=y+_walkingSpeedX.abs
                 }
                 if (_map.tileAtPixelIs(x,y+8,FOOTPATH_UP)){
                     y=y-_walkingSpeedX.abs
                 }
-            } else if ((_walkingSpeedY>0 && (_map.tileAtPixelIs(x,y,GRASS_TILES) || _map.tileAtPixelIs(x,y,FOOTPATH_TILES))) ||
-                (_walkingSpeedY<0 && (_map.tileAtPixelIs(x,y+8,GRASS_TILES) || _map.tileAtPixelIs(x,y+8,FOOTPATH_TILES)))) {
-                _walkingSpeedX=_walkingSpeedY*(RANDOM.int(0,1)-0.5)*1.2
-                flip=_walkingSpeedX<0
-                _walkingSpeedY=0
+            } else {
+                // Run away from player
+                if (AUTO_DRIVE) {
+                    if (hitbox.translate(x-48,y-8).intersects(_player.hitbox.translate(_player.x,_player.y))) {
+                        y=y+0.5
+                        _walkingSpeedY=_walkingSpeedY.abs
+                    }
+                    if (hitbox.translate(x-48,y+8).intersects(_player.hitbox.translate(_player.x,_player.y))) {
+                        y=y-0.5
+                        _walkingSpeedY=-_walkingSpeedY.abs
+                    }
+                }
+                // Stop crossing road if reached other side
+                if ((_walkingSpeedY>0 && (_map.tileAtPixelIs(x,y,GRASS_TILES) || _map.tileAtPixelIs(x,y,FOOTPATH_TILES))) ||
+                    (_walkingSpeedY<0 && (_map.tileAtPixelIs(x,y+8,GRASS_TILES) || _map.tileAtPixelIs(x,y+8,FOOTPATH_TILES)))) {
+                    _walkingSpeedX=_walkingSpeedY*(RANDOM.int(0,1)-0.5)*1.2
+                    flip=_walkingSpeedX<0
+                    _walkingSpeedY=0
+                }
             }
         }
     }
@@ -1384,6 +1400,9 @@ class Phone {
     }
 
     showPhone() {
+        if (!ENABLE_PHONE) {
+            return
+        }
         TIC.sfx(SFXTXT)
          _choiceMade = false
          _showPhone = true
