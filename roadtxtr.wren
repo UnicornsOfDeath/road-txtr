@@ -30,6 +30,7 @@ var SFXRIGHT=6
 var SFXWRONG=7
 var SFXTXT=8
 var SFXEXPLODE=9
+var SFXBORK=10
 var TXT_X=120
 var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
@@ -41,9 +42,9 @@ var STRESS_TICK=120
 var SHAKING_TICK=30
 var RANDOM=Random.new()
 var DEBUG_HITBOX=false
-var ENABLE_PHONE=false
+var ENABLE_PHONE=true
 var ENABLE_COLLISIONS=true
-var AUTO_DRIVE=true
+var AUTO_DRIVE=false
 var SHOW_DOG=false
 
 // VRAM ADDRESSES
@@ -903,7 +904,7 @@ class WinState is SkipState {
 		TIC.print("Pedestrians killed: %(PEDESTRIANS_KILLED.count)", 30, 80, 12)
         _corpses.each{|corpse| corpse.draw()}
         if (!SHOW_DOG) {
-            TIC.print("Dog unlocked!", 30, 110, 5)
+            TIC.print("Dog unlocked! (X to bork)", 30, 110, 5)
         }
         if (canSkip){
             TIC.print("Press any key to reset", 10, HEIGHT-10, 12)
@@ -1002,6 +1003,7 @@ class Player is GameObject {
     health { _health }
     health=(value){_health=value}
     stressed { _stressed }
+    borking { _borkTick>0 }
 
     makeStressed(){ 
         _stressed=true
@@ -1022,6 +1024,7 @@ class Player is GameObject {
         _stressed=false
         _isOnGrass=false
         _smoke=[]
+        _borkTick=0
     }
     isOnGrass=(value){
         if(value&&!_isOnGrass){
@@ -1030,6 +1033,14 @@ class Player is GameObject {
             TIC.sfx(-1)
         }
         _isOnGrass=value
+    }
+
+    bork() {
+        if (_borkTick>0) {
+            return
+        }
+        TIC.sfx(SFXBORK)
+        _borkTick=20
     }
 
     onHit(dmg){
@@ -1051,6 +1062,10 @@ class Player is GameObject {
                 ddy=1
             }
             _dy=(_dy+ddy*0.5).clamp(-1,1)
+
+            if (SHOW_DOG && TIC.btnp(BTN_B)) {
+                bork()
+            }
         }
 
         if (AUTO_DRIVE && _map) {
@@ -1097,6 +1112,7 @@ class Player is GameObject {
             _ticks=0
             _frame=1-_frame
         }
+        _borkTick=(_borkTick-1).max(0)
         if(damageLevel>0){
             if(RANDOM.int(5)==0){
                 _smoke.add(Smoke.new(x-camX,y-camY))
@@ -1127,7 +1143,11 @@ class Player is GameObject {
         var drawY=y-camY-8+dy
         TIC.spr(352+damageLevel*48+_frame*4,drawX,drawY,0,1,0,0,4,3)
         if (SHOW_DOG) {
-            TIC.spr(360+(1-_frame)*2,drawX,drawY+8,0,1,0,0,2,2)
+            var frame=1-_frame
+            if (_borkTick>0) {
+                frame=frame+2
+            }
+            TIC.spr(360+frame*2,drawX,drawY+8,0,1,0,0,2,2)
         }
         _smoke.each {|smoke|
             smoke.draw()
@@ -1235,7 +1255,7 @@ class Oldie is FlyingObstacle {
                 }
             } else {
                 // Run away from player
-                if (AUTO_DRIVE) {
+                if (AUTO_DRIVE || _player.borking) {
                     if (hitbox.translate(x-48,y-8).intersects(_player.hitbox.translate(_player.x,_player.y))) {
                         y=y+0.5
                         _walkingSpeedY=_walkingSpeedY.abs
@@ -1789,6 +1809,10 @@ class Game is TIC{
 // 105:00000000f0000000ef000000ee000000ece00000cfe00000cf000000cc330000
 // 106:0000000f00ee00ee0eeefeeeeeddeece0dddecfe0000ecfe0000eccc0000eccc
 // 107:f0000000ef000000ee000000ece00000cfe00000cf000000cc330000cc300000
+// 108:0ee00fffeeee00ee0ddefeee00ddeece000decfe0000ecfe0000eccc0000eccc
+// 109:f0000000ef000000ee000000ece00000cfe00000cf0000c0cc33c00ccc300c0c
+// 110:0ee00fffeeee00ee0ddefeee00ddeece000decfe0000ecfe0000eccc0000eccc
+// 111:f0000000ef000000ee000000ece00000cfe00000cf000000cc330c00cc30c0c0
 // 112:faa12111faa12222fba11111fb911222fa912ffff912f999f912f9aaf12f9ba9
 // 113:11111111222222221111111122221222ff212fff9f212f99f212f99af212f9ba
 // 114:11122fab22222fabffffffab2222219affff221a9999f221aa99f121a99f1221
@@ -1801,6 +1825,10 @@ class Game is TIC{
 // 121:cc3000002f00000012f000002120000032f00000ff0000000000000000000000
 // 122:0000ec2200000e2200000f22000000f3000000f30000000f0000000000000000
 // 123:2f00000012f0000012f0000012f000002f000000f00000000000000000000000
+// 124:0000ec1100000e1100000fee000000fe0000000f000000000000000000000000
+// 125:11000c0c11f0c00c22f000c0ddf00000ff000000000000000000000000000000
+// 126:0000ec1100000eee00000fee000000ff00000000000000000000000000000000
+// 127:dd00c0c0eef00c00ff000000f000000000000000000000000000000000000000
 // 128:f12cccccf2222222f2fff222f1111ffff122ffddf111fdcf0fffffed000000ff
 // 129:c212cccc221222222212fff2fff11111ddff2222fedf1111ddffffffff000000
 // 130:cccc1212222211222222222211111fff2222ffdd1111fdcfffffffed000000ff
@@ -2027,6 +2055,7 @@ class Game is TIC{
 // 007:060006000600f600f600f6000670067006700670067016701670167016701670167016702670267036703670367046705670f670f670f670f670f6702f5000000000
 // 008:4800010001001100110021002100310041004100510051006100710081008100a100a100b100b100c100c100d100d100d100e100e100e100e100f100770000000000
 // 009:0407340364018400a40ea40d5406540464028400940fa40eb40d94058404840394019400a40eb40d94039401a40fb40ec40dc40ed40fe40ee40ef40db60000000000
+// 010:4800270308040806080708070807080708060806080508031802280038004800580f580e680d780c880ba80bb80ab80ac80ad809e809e808e808f808c12011000000
 // 048:04002100410f610f910ee10ef10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10df10dc0b000000000
 // 049:64008400b400e400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400604000000000
 // 050:1400640fa40ef40df40cf40bf409f408f408f408f409f409f408f408f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400b00000000000
