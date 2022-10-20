@@ -893,6 +893,9 @@ class WinState is SkipState {
 
 	finish() {
         SHOW_DOG=true
+        if (BAD_TEXT==0 && PEDESTRIANS_KILLED.count==0) {
+            AUTO_DRIVE=true
+        }
     }
 
 	draw() {
@@ -904,7 +907,10 @@ class WinState is SkipState {
 		TIC.print("Pedestrians killed: %(PEDESTRIANS_KILLED.count)", 30, 80, 12)
         _corpses.each{|corpse| corpse.draw()}
         if (!SHOW_DOG) {
-            TIC.print("Dog unlocked! (X to bork)", 30, 110, 5)
+            TIC.print("Dog unlocked! (X to bork)", 30, 110, 5+((tt/10).floor%2))
+        }
+        if (BAD_TEXT==0 && PEDESTRIANS_KILLED.count==0 && !AUTO_DRIVE) {
+            TIC.print("PERFECT! (auto-play unlocked)", 30, 120, 5+((tt/2).floor%2))
         }
         if (canSkip){
             TIC.print("Press any key to reset", 10, HEIGHT-10, 12)
