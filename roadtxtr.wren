@@ -62,6 +62,8 @@ var BTN_B=5
 var BTN_X=6
 var BTN_Y=7
 
+var CHEAT_CODE=[BTN_UP,BTN_UP,BTN_DOWN,BTN_DOWN,BTN_LEFT,BTN_RIGHT,BTN_LEFT,BTN_RIGHT,BTN_B,BTN_A]
+
 // SPRITES
 
 var PEDESTRIAN_SPRITES=[256,258,260,262,264,266,268,270]
@@ -605,6 +607,7 @@ class TitleState is State {
         _player=Player.new(10,40,0,null)
         _nextStateCounter=0
         _phone=Phone.new()
+        _keys=[]
     }
 
     isSwitchingToNextState{_nextStateCounter>0}
@@ -614,6 +617,7 @@ class TitleState is State {
 		TIC.music(MUSTITLE,-1,-1,false)
         _player=Player.new(10,40,0,null)
         _nextStateCounter=0
+        _keys=[]
     }
 
 	finish() {
@@ -641,6 +645,31 @@ class TitleState is State {
         if(isSwitchingToNextState){
             _nextStateCounter=_nextStateCounter-1
         }
+
+        // Check cheat code
+        for(k in BTN_UP..BTN_B) {
+            if(TIC.btnp(k)) {
+                _keys.add(k)
+                if (_keys.count==CHEAT_CODE.count) {
+                    var same=true
+                    for (i in 0..._keys.count) {
+                        if (_keys[i] != CHEAT_CODE[i]) {
+                            same=false
+                            break
+                        }
+                    }
+                    if (same) {
+                        TIC.sfx(SFXRIGHT)
+                        AUTO_DRIVE=true
+                        SHOW_DOG=true
+                        ENABLE_PHONE=false
+                    }
+                    _keys.removeAt(0)
+                }
+                break
+            }
+        }
+
         _phone.update()
         if (!_phone.isShowing()){
             _phone.showPhone([
