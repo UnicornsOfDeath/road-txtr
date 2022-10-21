@@ -31,6 +31,7 @@ var SFXWRONG=7
 var SFXTXT=8
 var SFXEXPLODE=9
 var SFXBORK=10
+var PLAYER_DX=10
 var TXT_X=120
 var TXT_Y=10
 var TXT_W=WIDTH-TXT_X-10
@@ -46,6 +47,12 @@ var ENABLE_PHONE=true
 var ENABLE_COLLISIONS=true
 var AUTO_DRIVE=false
 var SHOW_DOG=false
+var XING_X=7900
+var XING_TICKS=720
+var DUCK_SPRITE=268
+var DUCKLING_SPRITE=302
+var XING_LINGS=12
+var XING_BORK_TICKS=[4455,4500,4555,4600]
 
 // VRAM ADDRESSES
 var MOUSE_CURSOR=0x3FFB
@@ -75,7 +82,8 @@ var PEDESTRIAN_SPEEDS={
     264:0.4,
     266:0.5,
     268:0.2,
-    270:0.3
+    270:0.3,
+    302:0.2
 }
 
 // TILE IDs
@@ -604,7 +612,7 @@ class SplashState is SkipState {
 
 class TitleState is State {
 	construct new() {
-        _player=Player.new(10,40,0,null)
+        _player=Player.new(PLAYER_DX,40,0,null)
         _nextStateCounter=0
         _phone=Phone.new()
         _keys=[]
@@ -615,7 +623,7 @@ class TitleState is State {
 	reset() {
 		super.reset()
 		TIC.music(MUSTITLE,-1,-1,false)
-        _player=Player.new(10,40,0,null)
+        _player=Player.new(PLAYER_DX,40,0,null)
         _nextStateCounter=0
         _keys=[]
     }
@@ -702,12 +710,13 @@ class MainState is State {
         _phone=Phone.new()
         _obstacles=[]
         _map=GameMap.new()
-        _player=Player.new(10,60,_speed,_map)
+        _player=Player.new(PLAYER_DX,60,_speed,_map)
         _currentTime=0
         _progressbar = ProgressBar.new()
 		_winstate=this
         _deathticks=0
         _lastCrossingX=0
+        _xinged=false
     }
     winstate { _winstate }
     winstate=(value) {
@@ -717,7 +726,7 @@ class MainState is State {
     reset() {
         super.reset()
         _x=0
-        _player=Player.new(10,60,_speed,_map)
+        _player=Player.new(PLAYER_DX,60,_speed,_map)
         _phone=Phone.new()
         _obstacles=[]
         _showText=false
@@ -729,6 +738,25 @@ class MainState is State {
         GOOD_TEXT=0
         BAD_TEXT=0
         PEDESTRIANS_KILLED=[]
+        _xinged=false
+    }
+
+    setCrossing(coordX) {
+        // Change road tiles to crossing tiles
+        _lastCrossingX = _x
+        var tileX = (coordX/TILE_SIZE).floor
+        var x = tileX%(MAP_W*3)
+        for(y in 0...MAP_H){
+            if (_map.tileAtIs(x,y,ROAD_TILES)) {
+                TIC.mset(x,y,CROSSING_TILES[0])
+                TIC.mset(x+1,y,CROSSING_TILES[1])
+            }
+            y = y + 1
+            if (_map.tileAtIs(x,y,ROAD_TILES)) {
+                TIC.mset(x,y,CROSSING_TILES[2])
+                TIC.mset(x+1,y,CROSSING_TILES[3])
+            }
+        }
     }
 
     update() {
@@ -742,15 +770,22 @@ class MainState is State {
             _deathticks=60
         }
 
-        _x=_x+_speed
         _player.update(_x,_y)
+        _x=_player.x-PLAYER_DX
         _phone.update()
         _player.isOnGrass =_map.tileAtPixelIs(_player.x+24,_player.y+8,GRASS_TILES)
 
-        if(tt%(60-(50*_x/WIN_X).floor).floor==0) {
-            var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH+RANDOM.int(0,60),ROAD_TILES+FOOTPATH_TILES)
-            
-            if(coords!=null) {
+        var coords=_map.findYforRandomTileWithIdsAtX(_x+WIDTH+RANDOM.int(0,60),ROAD_TILES+FOOTPATH_TILES)
+        if (coords!=null) {
+            // Xing ducks
+            if (AUTO_DRIVE && _x>=XING_X && !_xinged) {
+                _xinged=true
+                setCrossing(coords[0])
+                _obstacles.add(Oldie.new(coords[0]+4,coords[1],0,1,DUCK_SPRITE,_map,_player))
+                for(i in 1..XING_LINGS){
+                    _obstacles.add(Oldie.new(coords[0]+4,coords[1]-i*12,0,1,DUCKLING_SPRITE,_map,_player))
+                }
+            } else if(tt%(60-(50*_x/WIN_X).floor).floor==0) {
                 var dir=RANDOM.int(0,2)*2-1
                 var sprite=RANDOM.sample(PEDESTRIAN_SPRITES)
 
@@ -760,20 +795,7 @@ class MainState is State {
 
                     // Change road tiles to crossing tiles
                     if (_x > _lastCrossingX + CROSSING_GAP && RANDOM.int(0,2)==0) {
-                        _lastCrossingX = _x
-                        var tileX = (coords[0]/TILE_SIZE).floor
-                        var x = tileX%(MAP_W*3)
-                        for(y in 0...MAP_H){
-                            if (_map.tileAtIs(x,y,ROAD_TILES)) {
-                                TIC.mset(x,y,CROSSING_TILES[0])
-                                TIC.mset(x+1,y,CROSSING_TILES[1])
-                            }
-                            y = y + 1
-                            if (_map.tileAtIs(x,y,ROAD_TILES)) {
-                                TIC.mset(x,y,CROSSING_TILES[2])
-                                TIC.mset(x+1,y,CROSSING_TILES[3])
-                            }
-                        }
+                        setCrossing(coords[0])
                     }
                 } else {
                     // Walking along sidewalk
@@ -864,7 +886,9 @@ class MainState is State {
         drawables.sort {|a,b| a.y+a.hitbox.top < b.y+b.hitbox.top}
         drawables.each {|drawable| drawable.draw(_x,_y)}
 
-        _progressbar.draw(_x)
+        if (!AUTO_DRIVE) {
+            _progressbar.draw(_x)
+        }
         _phone.draw()
     }
 
@@ -1060,6 +1084,10 @@ class Player is GameObject {
         _isOnGrass=false
         _smoke=[]
         _borkTick=0
+        _xingStopTicks=0
+        _xingAccelTicks=0
+        _xingState="normal"
+        _totalTicks=0
     }
     isOnGrass=(value){
         if(value&&!_isOnGrass){
@@ -1074,7 +1102,9 @@ class Player is GameObject {
         if (_borkTick>0) {
             return
         }
-        TIC.sfx(SFXBORK)
+        if(!AUTO_DRIVE) {
+            TIC.sfx(SFXBORK)
+        }
         _borkTick=20
     }
 
@@ -1086,7 +1116,38 @@ class Player is GameObject {
 
     update(camX,camY) {
         super.update()
-        x=x+_speed
+        var dx=1
+        if (AUTO_DRIVE && x>=XING_X) {
+            if (_xingState=="normal") {
+                _xingState="stopping"
+                _xingAccelTicks=200
+            } else if (_xingState=="stopping") {
+                _xingAccelTicks=_xingAccelTicks-1
+                dx=_xingAccelTicks/200
+                if (_xingAccelTicks==0) {
+                    _xingState="stop"
+                }
+            } else if (_xingState=="stop") {
+                dx=0
+                _xingStopTicks=_xingStopTicks+1
+                XING_BORK_TICKS.each {|tick|
+                    if (tick==_totalTicks) {
+                        bork()
+                    }
+                }
+                if (_xingStopTicks==XING_TICKS) {
+                    _xingState="starting"
+                }
+            } else if (_xingState=="starting") {
+                dx=_xingAccelTicks/200
+                _xingAccelTicks=_xingAccelTicks+1
+                if (_xingAccelTicks==200) {
+                    _xingState="continue"
+                }
+            }
+        }
+        _totalTicks=_totalTicks+1
+        x=x+_speed*dx
         if(_stressed == true) {
             _stressTick=_stressTick + 1
         } else {
@@ -1100,6 +1161,7 @@ class Player is GameObject {
 
             if (SHOW_DOG && TIC.btnp(BTN_B)) {
                 bork()
+                TIC.trace(_totalTicks)
             }
         }
 
@@ -1124,7 +1186,8 @@ class Player is GameObject {
             if (driveY!=0) {
                 y=y+_speed.abs*0.5*driveY
                 _dy=-_dy*RANDOM.float(0.5,1.5)
-            } else {
+            } else if (dx==1) {
+                // Random auto drive up/down
                 if (_dy.abs<0.01 || _dy.abs>0.5){
                     _dy=0.25
                 }
@@ -1180,7 +1243,7 @@ class Player is GameObject {
         if (SHOW_DOG) {
             var frame=1-_frame
             if (_borkTick>0) {
-                frame=frame+2
+                frame=2+((_borkTick/5).floor%3).max(1)-1
             }
             TIC.spr(360+frame*2,drawX,drawY+8,0,1,0,0,2,2)
         }
@@ -1258,12 +1321,17 @@ class FlyingObstacle is Obstacle {
 
 class Oldie is FlyingObstacle {
     construct new(x,y,walkDirX,walkDirY,sprite,map,player) {
-        super(x,y,sprite,(6/PEDESTRIAN_SPEEDS[sprite]).floor,2,(walkDirX==-1||RANDOM.int(0,2)==0)&&walkDirX!=1)
+        var animFrames=(6/PEDESTRIAN_SPEEDS[sprite]).floor
+        if (sprite==DUCKLING_SPRITE) {
+            animFrames=(animFrames/2).floor
+        }
+        super(x,y,sprite,animFrames,2,(walkDirX==-1||RANDOM.int(0,2)==0)&&walkDirX!=1)
 
         _walkingSpeedX=walkDirX*PEDESTRIAN_SPEEDS[sprite]
         _walkingSpeedY=walkDirY*PEDESTRIAN_SPEEDS[sprite]
         _map=map
         _player=player
+        _onRoad=false
     }
 
     onHit(){
@@ -1290,7 +1358,7 @@ class Oldie is FlyingObstacle {
                 }
             } else {
                 // Run away from player
-                if (AUTO_DRIVE || _player.borking) {
+                if ((AUTO_DRIVE || _player.borking) && sprite!=DUCKLING_SPRITE) {
                     if (hitbox.translate(x-48,y-8).intersects(_player.hitbox.translate(_player.x,_player.y))) {
                         y=y+0.5
                         _walkingSpeedY=_walkingSpeedY.abs
@@ -1301,8 +1369,12 @@ class Oldie is FlyingObstacle {
                     }
                 }
                 // Stop crossing road if reached other side
-                if ((_walkingSpeedY>0 && (_map.tileAtPixelIs(x,y,GRASS_TILES) || _map.tileAtPixelIs(x,y,FOOTPATH_TILES))) ||
-                    (_walkingSpeedY<0 && (_map.tileAtPixelIs(x,y+8,GRASS_TILES) || _map.tileAtPixelIs(x,y+8,FOOTPATH_TILES)))) {
+                if (y>0 && (_map.tileAtPixelIs(x,y,ROAD_TILES) || _map.tileAtPixelIs(x,y,CROSSING_TILES))) {
+                    _onRoad=true
+                }
+                if (_onRoad &&
+                    ((_walkingSpeedY>0 && (_map.tileAtPixelIs(x,y,GRASS_TILES) || _map.tileAtPixelIs(x,y,FOOTPATH_TILES))) ||
+                    (_walkingSpeedY<0 && (_map.tileAtPixelIs(x,y+8,GRASS_TILES) || _map.tileAtPixelIs(x,y+8,FOOTPATH_TILES))))) {
                     _walkingSpeedX=_walkingSpeedY*(RANDOM.int(0,1)-0.5)*1.2
                     flip=_walkingSpeedX<0
                     _walkingSpeedY=0
@@ -1809,6 +1881,8 @@ class Game is TIC{
 // 033:0000000000000000000000000000000050000000670000006700000067000560
 // 035:0000000000000000000000000000000000000000000000000700000077000000
 // 036:000ff00000fa9f0000fa9f0000ffff000faaa9f00faaa9f00faaa9f00faaa9f0
+// 046:00000000000000000000000000000000000000000000000000dddd000dccccd0
+// 047:000000000000000000000000000000000000000000dddd000dccccd00dcfcfd0
 // 048:5555600666666667077666660007777700000666000056660056666605666667
 // 049:6770566667756670777667007757700075666000676666007176670011066770
 // 050:0000000700000076000000660000006600007766000067660000f66700000607
@@ -1816,6 +1890,8 @@ class Game is TIC{
 // 052:0fa999f00ffffff00fccccf000ffff0000fa9f0000fa9f0000fa9f0000fa9f00
 // 053:0000000000dddd000d2222d0d22cc22dd2cccc2dd2cccc2dd22cc22d0d2222d0
 // 054:000ff00000f44f0000f44f000f4ff4f0ff4ff4fff444444ff44ff44ff444444f
+// 062:0dcfcfd00dcfcfd00dcc444000dd33000dccccd0ddccdcd03cddcc3303dddd30
+// 063:0dcfcfd00dcc444000dd33000dccccd0ddccdcd0dcddccd00dddddd000332300
 // 064:5666677266677032677000320700003300000322000003210000032100000321
 // 065:2107677011007770110077002000070010000000100000001000000010000000
 // 066:0000777600077677000766770007666707676666077667770fff66ffff066606
@@ -1844,8 +1920,8 @@ class Game is TIC{
 // 105:00000000f0000000ef000000ee000000ece00000cfe00000cf000000cc330000
 // 106:0000000f00ee00ee0eeefeeeeeddeece0dddecfe0000ecfe0000eccc0000eccc
 // 107:f0000000ef000000ee000000ece00000cfe00000cf000000cc330000cc300000
-// 108:0ee00fffeeee00ee0ddefeee00ddeece000decfe0000ecfe0000eccc0000eccc
-// 109:f0000000ef000000ee000000ece00000cfe00000cf0000c0cc33c00ccc300c0c
+// 108:0ee00fffeeee00ee0ddefeee00ddeece000decfe0000ecfc0000ecc10000ec11
+// 109:f0000000ef000000ce330000fc300000fcc00000c11000c01110c00c11100c0c
 // 110:0ee00fffeeee00ee0ddefeee00ddeece000decfe0000ecfe0000eccc0000eccc
 // 111:f0000000ef000000ee000000ece00000cfe00000cf000000cc330c00cc30c0c0
 // 112:faa12111faa12222fba11111fb911222fa912ffff912f999f912f9aaf12f9ba9
@@ -1860,8 +1936,8 @@ class Game is TIC{
 // 121:cc3000002f00000012f000002120000032f00000ff0000000000000000000000
 // 122:0000ec2200000e2200000f22000000f3000000f30000000f0000000000000000
 // 123:2f00000012f0000012f0000012f000002f000000f00000000000000000000000
-// 124:0000ec1100000e1100000fee000000fe0000000f000000000000000000000000
-// 125:11000c0c11f0c00c22f000c0ddf00000ff000000000000000000000000000000
+// 124:0000ec2100000e2200000fee000000fe0000000f000000000000000000000000
+// 125:21000c0c12f0c00c31f000c0ddf00000ff000000000000000000000000000000
 // 126:0000ec1100000eee00000fee000000ff00000000000000000000000000000000
 // 127:dd00c0c0eef00c00ff000000f000000000000000000000000000000000000000
 // 128:f12cccccf2222222f2fff222f1111ffff122ffddf111fdcf0fffffed000000ff
