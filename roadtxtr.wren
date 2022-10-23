@@ -47,7 +47,7 @@ var ENABLE_PHONE=true
 var ENABLE_COLLISIONS=true
 var AUTO_DRIVE=false
 var SHOW_DOG=false
-var XING_X=7900
+var XING_X=7980
 var XING_TICKS=720
 var DUCK_SPRITE=268
 var DUCKLING_SPRITE=302
@@ -781,9 +781,13 @@ class MainState is State {
             if (AUTO_DRIVE && _x>=XING_X && !_xinged) {
                 _xinged=true
                 setCrossing(coords[0])
-                _obstacles.add(Oldie.new(coords[0]+4,coords[1],0,1,DUCK_SPRITE,_map,_player))
+                var duck=Oldie.new(coords[0]+4,coords[1],0,1,DUCK_SPRITE,_map,_player)
+                duck.xing()
+                _obstacles.add(duck)
                 for(i in 1..XING_LINGS){
-                    _obstacles.add(Oldie.new(coords[0]+4,coords[1]-i*12,0,1,DUCKLING_SPRITE,_map,_player))
+                    var d = Oldie.new(coords[0]+4,coords[1]-i*12,0,1,DUCKLING_SPRITE,_map,_player)
+                    d.xing()
+                    _obstacles.add(d)
                 }
             } else if(tt%(60-(50*_x/WIN_X).floor).floor==0) {
                 var dir=RANDOM.int(0,2)*2-1
@@ -1161,7 +1165,6 @@ class Player is GameObject {
 
             if (SHOW_DOG && TIC.btnp(BTN_B)) {
                 bork()
-                TIC.trace(_totalTicks)
             }
         }
 
@@ -1332,6 +1335,11 @@ class Oldie is FlyingObstacle {
         _map=map
         _player=player
         _onRoad=false
+        _ignorePlayer=false
+    }
+
+    xing() {
+        _ignorePlayer=true
     }
 
     onHit(){
@@ -1358,7 +1366,7 @@ class Oldie is FlyingObstacle {
                 }
             } else {
                 // Run away from player
-                if ((AUTO_DRIVE || _player.borking) && sprite!=DUCKLING_SPRITE) {
+                if ((AUTO_DRIVE || _player.borking) && !_ignorePlayer) {
                     if (hitbox.translate(x-48,y-8).intersects(_player.hitbox.translate(_player.x,_player.y))) {
                         y=y+0.5
                         _walkingSpeedY=_walkingSpeedY.abs
